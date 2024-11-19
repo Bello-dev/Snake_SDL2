@@ -5,10 +5,15 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_mixer.h>
 #include <SDL2/SDL2_gfxPrimitives.h>
-#include <math.h>
-#include <stdlib.h>
-#include <time.h>
-#include <stdio.h>
+#include <SDL2/SDL_ttf.h>
+
+#include <iostream>
+#include <cmath>
+#include <cstdlib>
+#include <ctime>
+#include <cstdio>
+
+using namespace std;
 
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600
@@ -42,18 +47,10 @@ void afficher_serpent(SDL_Renderer *renderer, Serpent *s);
 void update_snake(Serpent *s, int dx, int dy);
 int check_collision(Serpent *s);
 void dessiner_bordure_blocs(SDL_Renderer *renderer);
-void game_loop(SDL_Renderer *renderer,  Mix_Music *music,  Mix_Music **choc);
+void game_loop(SDL_Renderer *renderer,  Mix_Music **music,  Mix_Music **choc);
 void cleanup(SDL_Window *window, SDL_Renderer *renderer, Mix_Music *music, Mix_Music *choc); 
-
-
-
-
-
-
-
-
-
-
+void renderTextCentered(SDL_Renderer *renderer, const char *text, TTF_Font *font, SDL_Color textColor, SDL_Rect *rect);
+void ecran_laterra(SDL_Renderer renderer);
 
 
 

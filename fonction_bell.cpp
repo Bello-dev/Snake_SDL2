@@ -15,7 +15,7 @@ int init(SDL_Window **window, SDL_Renderer **renderer, Mix_Music **music,  Mix_M
 {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) 
     {
-        printf("Erreur SDL: %s\n", SDL_GetError());
+        cout<<"Erreur SDL: " <<SDL_GetError()<<"\n";
         return 0;
     }
     
@@ -23,7 +23,7 @@ int init(SDL_Window **window, SDL_Renderer **renderer, Mix_Music **music,  Mix_M
     
     if (!*window) 
     {
-        printf("Erreur création fenêtre: %s\n", SDL_GetError());
+        cout<<"Erreur création fenêtre: "<< SDL_GetError()<<"\n";
         return 0;
     }
    
@@ -31,27 +31,27 @@ int init(SDL_Window **window, SDL_Renderer **renderer, Mix_Music **music,  Mix_M
     
     if (!*renderer) 
     {
-        printf("Erreur création renderer: %s\n", SDL_GetError());
+        cout<<"Erreur création renderer: "<< SDL_GetError()<<"\n";
         return 0;
     }
 
     if (Mix_Init(MIX_INIT_MP3) != MIX_INIT_MP3)
     {
-        printf("Erreur initialisation audio %s\n", Mix_GetError());
+        cout<<"Erreur initialisation audio "<<Mix_GetError()<<"\n";
         return 0;
     }
 
     if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0)
     {
-        printf("Erreur Mix_OpenAudio %s\n", Mix_GetError());
+        cout<<"Erreur Mix_OpenAudio "<<Mix_GetError()<<"\n";
         return 0;
     }
 
-    *music = Mix_LoadMUS("music.mp3");
+    *music = Mix_LoadMUS("data/sons/music.mp3");
 
     if (! *music)
     {
-        printf("Erreur lecture musique %s", Mix_GetError());
+        cout<<"Erreur lecture musique "<<Mix_GetError()<<"\n";
         return 0;
     }
     else
@@ -59,11 +59,11 @@ int init(SDL_Window **window, SDL_Renderer **renderer, Mix_Music **music,  Mix_M
 	        Mix_PlayMusic(*music, -1);
 	    }
 
-    *choc = Mix_LoadMUS("choc.mp3");
+    *choc = Mix_LoadMUS("data/sons/choc.mp3");
 
     if (! *choc)
     {
-        printf("Erreur lecture musique %s", Mix_GetError());
+        cout<<"Erreur lecture musique "<<Mix_GetError()<<"\n";
         return 0;
     }
 
@@ -72,11 +72,11 @@ int init(SDL_Window **window, SDL_Renderer **renderer, Mix_Music **music,  Mix_M
 
 int load_food_texture(SDL_Renderer *renderer) 
 {
-    SDL_Surface *foodSurface = IMG_Load("nouriture.jpg"); // Remplacez par votre chemin d'image
+    SDL_Surface *foodSurface = IMG_Load("data/images/nouriture.jpg"); // Remplacez par votre chemin d'image
     
     if (!foodSurface) 
     {
-        printf("Erreur chargement image nourriture: %s\n", IMG_GetError());
+        cout<<"Erreur chargement image nourriture: "<<IMG_GetError()<<"\n";
         return 0;
     }
 
@@ -86,7 +86,7 @@ int load_food_texture(SDL_Renderer *renderer)
 
     if (!foodTexture) 
     {
-        printf("Erreur création texture nourriture: %s\n", SDL_GetError());
+        cout<<"Erreur création texture nourriture: "<<SDL_GetError()<<"\n";
         return 0;
     }
 
@@ -116,7 +116,7 @@ Serpent *add_queue(Serpent *s)
 
     Serpent *nouveau = (Serpent *)malloc(sizeof(Serpent));
     if (!nouveau) {
-        printf("Erreur allocation mémoire\n");
+        cout<<"Erreur allocation mémoire"<<"\n";
         exit(EXIT_FAILURE);
     }
 
@@ -200,6 +200,8 @@ void dessiner_bordure_blocs(SDL_Renderer *renderer)
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderDrawRect(renderer, &rect);
 
+        SDL_RenderCopy(renderer, foodTexture, NULL, &rect);
+
         // Bas
         SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255); // Couleur bleu clair
 
@@ -208,6 +210,9 @@ void dessiner_bordure_blocs(SDL_Renderer *renderer)
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderDrawRect(renderer, &rect);
 
+        SDL_RenderCopy(renderer, foodTexture, NULL, &rect);
+
+
     }
 
     // Dessiner les blocs à gauche et à droite
@@ -215,30 +220,36 @@ void dessiner_bordure_blocs(SDL_Renderer *renderer)
     {
         // Gauche
         rect = (SDL_Rect){0, y, block_size, block_size};
-         SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255); // Couleur bleu clair
+        SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255);
 
         SDL_RenderFillRect(renderer, &rect);
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderDrawRect(renderer, &rect);
 
+        SDL_RenderCopy(renderer, foodTexture, NULL, &rect);
+
 
         // Droite
-                SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255); // Couleur bleu clair
+        SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255);
 
         rect = (SDL_Rect){SCREEN_WIDTH - block_size, y, block_size, block_size};
         SDL_RenderFillRect(renderer, &rect);
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderDrawRect(renderer, &rect);
 
+        SDL_RenderCopy(renderer, foodTexture, NULL, &rect);
+
     }
 }
 
 // Boucle principale du jeu
-void game_loop(SDL_Renderer *renderer,  Mix_Music *music,  Mix_Music **choc) 
+void game_loop(SDL_Renderer *renderer,  Mix_Music **music,  Mix_Music **choc) 
 {
     Serpent *serpent = (Serpent *)malloc(sizeof(Serpent));
-    if (!serpent) {
-        printf("Erreur allocation mémoire\n");
+    
+    if (!serpent) 
+    {
+        cout<<"Erreur allocation mémoire\n";
         exit(EXIT_FAILURE);
     }
 
@@ -306,6 +317,8 @@ void game_loop(SDL_Renderer *renderer,  Mix_Music *music,  Mix_Music **choc)
 
         if (distance(serpent->cercle.x, serpent->cercle.y, food.x, food.y) < RADIUS + FOOD_SIZE / 2) 
         {
+        	 Mix_PlayMusic(*choc, 1);
+
             serpent = add_queue(serpent);
             generate_food();
         }
@@ -313,12 +326,12 @@ void game_loop(SDL_Renderer *renderer,  Mix_Music *music,  Mix_Music **choc)
         if (check_collision(serpent)) 
         {
             printf("Game Over! Taille du serpent: %d\n", taille_serpent);
-            Mix_PlayMusic(*choc, -1);
             // SDL_Delay(2000);
-            running = 0;
+            // running = 0;
         }
 
         // Affichage
+
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
 
@@ -360,4 +373,51 @@ void cleanup(SDL_Window *window, SDL_Renderer *renderer, Mix_Music *music, Mix_M
     Mix_Quit();
     IMG_Quit();
     SDL_Quit();
+}
+
+void renderTextCentered(SDL_Renderer *renderer, const char *text, TTF_Font *font, SDL_Color textColor, SDL_Rect *rect) 
+{
+    SDL_Surface *textSurface = TTF_RenderText_Blended(font, text, textColor);
+    if (!textSurface) {
+        cout<<"Erreur création surface : "<<TTF_GetError()<<"\n";
+        return;
+    }
+
+    SDL_Texture *textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+    
+    if (!textTexture) 
+    {
+        cout<<"Erreur création texture : "<<SDL_GetError()<<"\n";
+        SDL_FreeSurface(textSurface);
+        return;
+    }
+
+    int textWidth = textSurface->w;
+    int textHeight = textSurface->h;
+
+    SDL_Rect textRect;
+    textRect.x = rect->x + (rect->w - textWidth) / 2;
+    textRect.y = rect->y + (rect->h - textHeight) / 2;
+    textRect.w = textWidth;
+    textRect.h = textHeight;
+
+    SDL_FreeSurface(textSurface);
+
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    SDL_RenderFillRect(renderer, rect);
+
+    SDL_RenderCopy(renderer, textTexture, NULL, &textRect);
+
+    SDL_DestroyTexture(textTexture);
+}
+
+void ecran_lateral(SDL_Renderer *renderer, TTF_Font *font, SDL_Color textColor)
+{
+	SDL_Rect lat={SCREEN_WIDTH, 0, 200, SCREEN_HEIGHT};
+    SDL_SetRenderDrawColor(renderer, 190, 80, 255, 255);
+    SDL_RenderFillRect(renderer, &lat);
+    SDL_Color color = {190, 80, 255, 255};
+
+   renderTextCentered(renderer, "BELLO DEV", font, color, &lat);
+
 }
