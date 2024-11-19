@@ -2,7 +2,11 @@
 
 int taille_serpent = 0;
 int VITESSE = 90;
+SDL_Texture *cadreTexture = NULL;
 SDL_Texture *foodTexture = NULL;
+SDL_Texture *cadreLateralTexture = NULL;
+SDL_Texture *bgTexture = NULL;
+
 coordonne food;
 
 
@@ -11,7 +15,7 @@ double distance(int x1, int y1, int x2, int y2)
     return sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
 }
 
-int init(SDL_Window **window, SDL_Renderer **renderer, Mix_Music **music,  Mix_Music **choc)
+int init(SDL_Window **window, SDL_Renderer **renderer, Mix_Music **music,  Mix_Music **choc, Mix_Music *song[])
 {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) 
     {
@@ -67,12 +71,43 @@ int init(SDL_Window **window, SDL_Renderer **renderer, Mix_Music **music,  Mix_M
         return 0;
     }
 
+    for (int i = 0; i < 30; i++)
+    {
+	char nomFichier[255];
+    	sprintf(nomFichier,"data/sons/Sound/common_ %d.wav",i+1);
+
+  	  	song[i] = Mix_LoadMUS(nomFichier);
+
+	    if (! song[i])
+	    {
+	        cout<<"Erreur lecture musique "<<nomFichier<<Mix_GetError()<<"\n";
+	        return 0;
+	    }
+	}
     return 1;
 }
 
 int load_food_texture(SDL_Renderer *renderer) 
 {
-    SDL_Surface *foodSurface = IMG_Load("data/images/nouriture.jpg"); // Remplacez par votre chemin d'image
+    SDL_Surface *cadreSurface = IMG_Load("data/images/murail.jpg");
+    
+    if (!cadreSurface) 
+    {
+        cout<<"Erreur chargement image cadre: "<<IMG_GetError()<<"\n";
+        return 0;
+    }
+
+    cadreTexture = SDL_CreateTextureFromSurface(renderer, cadreSurface);
+
+    SDL_FreeSurface(cadreSurface);
+
+    if (!cadreTexture) 
+    {
+        cout<<"Erreur création texture cadre: "<<SDL_GetError()<<"\n";
+        return 0;
+    }
+
+	SDL_Surface *foodSurface = IMG_Load("data/images/nouriture.jpg");
     
     if (!foodSurface) 
     {
@@ -90,6 +125,41 @@ int load_food_texture(SDL_Renderer *renderer)
         return 0;
     }
 
+    SDL_Surface *bgSurface = IMG_Load("data/images/bg.jpg");
+    
+    if (!bgSurface) 
+    {
+        cout<<"Erreur chargement image badgrund: "<<IMG_GetError()<<"\n";
+        return 0;
+    }
+
+    bgTexture = SDL_CreateTextureFromSurface(renderer, bgSurface);
+
+    SDL_FreeSurface(bgSurface);
+
+    if (!bgTexture) 
+    {
+        cout<<"Erreur création texture badgrund: "<<SDL_GetError()<<"\n";
+        return 0;
+    }
+
+    SDL_Surface *cadreLatSurface = IMG_Load("data/images/bgLat.jpg");
+    
+    if (!cadreLatSurface) 
+    {
+        cout<<"Erreur chargement image bgLat: "<<IMG_GetError()<<"\n";
+        return 0;
+    }
+
+    cadreLateralTexture = SDL_CreateTextureFromSurface(renderer, cadreLatSurface);
+
+    SDL_FreeSurface(cadreLatSurface);
+
+    if (!cadreLateralTexture) 
+    {
+        cout<<"Erreur création texture bgLat: "<<SDL_GetError()<<"\n";
+        return 0;
+    }
     return 1;
 }
 
@@ -195,55 +265,53 @@ void dessiner_bordure_blocs(SDL_Renderer *renderer)
     {
         // Haut
         rect = (SDL_Rect){x, 0, block_size, block_size};
-        SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255); // Couleur bleu clair
-        SDL_RenderFillRect(renderer, &rect);
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        SDL_RenderDrawRect(renderer, &rect);
-
-        SDL_RenderCopy(renderer, foodTexture, NULL, &rect);
+        SDL_RenderCopy(renderer, cadreTexture, NULL, &rect);
 
         // Bas
-        SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255); // Couleur bleu clair
-
         rect = (SDL_Rect){x, SCREEN_HEIGHT - block_size, block_size, block_size};
-        SDL_RenderFillRect(renderer, &rect);
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        SDL_RenderDrawRect(renderer, &rect);
-
-        SDL_RenderCopy(renderer, foodTexture, NULL, &rect);
-
-
+        SDL_RenderCopy(renderer, cadreTexture, NULL, &rect);
     }
 
-    // Dessiner les blocs à gauche et à droite
+    // Dessiner les blocs principals à gauche et à droite
     for (int y = 0; y < SCREEN_HEIGHT; y += block_size) 
     {
         // Gauche
         rect = (SDL_Rect){0, y, block_size, block_size};
-        SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255);
-
-        SDL_RenderFillRect(renderer, &rect);
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        SDL_RenderDrawRect(renderer, &rect);
-
-        SDL_RenderCopy(renderer, foodTexture, NULL, &rect);
+        SDL_RenderCopy(renderer, cadreTexture, NULL, &rect);
 
 
         // Droite
-        SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255);
-
         rect = (SDL_Rect){SCREEN_WIDTH - block_size, y, block_size, block_size};
-        SDL_RenderFillRect(renderer, &rect);
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        SDL_RenderDrawRect(renderer, &rect);
-
-        SDL_RenderCopy(renderer, foodTexture, NULL, &rect);
-
+        SDL_RenderCopy(renderer, cadreTexture, NULL, &rect);
     }
+
+	// Dessiner les blocs sur l'ecran lateral  à gauche et à droite
+    for (int y = 0; y < SCREEN_HEIGHT; y += block_size) 
+    {
+        // Gauche
+        rect = (SDL_Rect){SCREEN_WIDTH, y, block_size, block_size};
+        SDL_RenderCopy(renderer, cadreLateralTexture, NULL, &rect);
+
+
+        // Droite
+        rect = (SDL_Rect){SCREEN_WIDTH+200 - block_size, y, block_size, block_size};
+        SDL_RenderCopy(renderer, cadreLateralTexture, NULL, &rect);
+    } 
+
+     for (int x = SCREEN_WIDTH; x < SCREEN_WIDTH+200; x += block_size) 
+    {
+        // Haut
+        rect = (SDL_Rect){x, 0, block_size, block_size};
+        SDL_RenderCopy(renderer, cadreLateralTexture, NULL, &rect);
+
+        // Bas
+        rect = (SDL_Rect){x, SCREEN_HEIGHT - block_size, block_size, block_size};
+        SDL_RenderCopy(renderer, cadreLateralTexture, NULL, &rect);
+    }   
 }
 
 // Boucle principale du jeu
-void game_loop(SDL_Renderer *renderer,  Mix_Music **music,  Mix_Music **choc) 
+void game_loop(SDL_Renderer *renderer,  Mix_Music **music,  Mix_Music **choc, Mix_Music *song[]) 
 {
     Serpent *serpent = (Serpent *)malloc(sizeof(Serpent));
     
@@ -260,7 +328,8 @@ void game_loop(SDL_Renderer *renderer,  Mix_Music **music,  Mix_Music **choc)
 
     int dx = RADIUS * 2, dy = 0;
     generate_food();
-
+    SDL_Rect bg = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
+    SDL_Rect bgLat = {SCREEN_WIDTH, 0, 200, SCREEN_HEIGHT};
     int running = 1;
 
     SDL_Event event;
@@ -277,6 +346,11 @@ void game_loop(SDL_Renderer *renderer,  Mix_Music **music,  Mix_Music **choc)
                 switch (event.key.keysym.sym) 
                 {
                     case SDLK_UP:
+                    	if(song[4])
+						    {
+						    	Mix_PlayMusic(song[4], 1);
+						    	// while(Mix_PlayingMusic());
+						    }
                         if (dy == 0) {
                             dx = 0;
                             dy = -RADIUS * 2;
@@ -284,6 +358,11 @@ void game_loop(SDL_Renderer *renderer,  Mix_Music **music,  Mix_Music **choc)
                         break;
 
                     case SDLK_DOWN:
+                    	if(song[4])
+                    	{
+						   	Mix_PlayMusic(song[4], 1);
+						    // while(Mix_PlayingMusic());
+						}
                         if (dy == 0) {
                             dx = 0;
                             dy = RADIUS * 2;
@@ -291,6 +370,11 @@ void game_loop(SDL_Renderer *renderer,  Mix_Music **music,  Mix_Music **choc)
                         break;
 
                     case SDLK_LEFT:
+                    	if(song[4])
+                    	{
+						    Mix_PlayMusic(song[4], 1);
+						    // while(Mix_PlayingMusic());
+						}
                         if (dx == 0) {
                             dx = -RADIUS * 2;
                             dy = 0;
@@ -298,6 +382,11 @@ void game_loop(SDL_Renderer *renderer,  Mix_Music **music,  Mix_Music **choc)
                         break;
 
                     case SDLK_RIGHT:
+                    	if(song[4])
+                    	{
+						    Mix_PlayMusic(song[4], 1);
+						    // while(Mix_PlayingMusic());
+						}
                         if (dx == 0) {
                             dx = RADIUS * 2;
                             dy = 0;
@@ -317,7 +406,12 @@ void game_loop(SDL_Renderer *renderer,  Mix_Music **music,  Mix_Music **choc)
 
         if (distance(serpent->cercle.x, serpent->cercle.y, food.x, food.y) < RADIUS + FOOD_SIZE / 2) 
         {
-        	 Mix_PlayMusic(*choc, 1);
+        	 // Mix_PlayMusic(*choc, 1);
+        	if(song[26])
+        	{
+				Mix_PlayMusic(song[26], 1);
+				// while(Mix_PlayingMusic());
+			}
 
             serpent = add_queue(serpent);
             generate_food();
@@ -326,14 +420,22 @@ void game_loop(SDL_Renderer *renderer,  Mix_Music **music,  Mix_Music **choc)
         if (check_collision(serpent)) 
         {
             printf("Game Over! Taille du serpent: %d\n", taille_serpent);
+            if(song[21])
+		    {
+		    	Mix_PlayMusic(song[21], 1);
+		    	// while(Mix_PlayingMusic());
+		    }
             // SDL_Delay(2000);
-            // running = 0;
+            running = 0;
         }
 
         // Affichage
 
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
+
+        SDL_RenderCopy(renderer, bgTexture, NULL, &bg);
+        // SDL_RenderCopy(renderer, cadreLateralTexture, NULL, &bgLat);
 
         dessiner_bordure_blocs(renderer);
         afficher_food(renderer);
@@ -352,10 +454,10 @@ void game_loop(SDL_Renderer *renderer,  Mix_Music **music,  Mix_Music **choc)
     }
 }
 
-void cleanup(SDL_Window *window, SDL_Renderer *renderer, Mix_Music *music, Mix_Music *choc) 
+void cleanup(SDL_Window *window, SDL_Renderer *renderer, Mix_Music *music, Mix_Music *choc, Mix_Music *song[]) 
 {
-    if (foodTexture) 
-        SDL_DestroyTexture(foodTexture);
+    if (cadreTexture) 
+        SDL_DestroyTexture(cadreTexture);
 
     if (renderer)
         SDL_DestroyRenderer(renderer);
@@ -368,6 +470,15 @@ void cleanup(SDL_Window *window, SDL_Renderer *renderer, Mix_Music *music, Mix_M
 
     if (choc)
         Mix_FreeMusic(choc);
+
+    for (int i = 0; i < 30; ++i)
+    {
+    	if (song[i])
+    	{
+    		Mix_FreeMusic(song[i]);
+    		song[i] = NULL;
+    	}
+    }
 
     Mix_CloseAudio();
     Mix_Quit();
