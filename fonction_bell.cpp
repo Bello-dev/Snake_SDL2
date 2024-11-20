@@ -414,8 +414,12 @@ void game_loop(SDL_Renderer *renderer,  Mix_Music **music,  Mix_Music **choc, Mi
     {
         while (SDL_PollEvent(&event)) 
         {
-            if (event.type == SDL_QUIT) 
+            if (event.type == SDL_QUIT)
+            {
+
                 running = 0;
+                // update_snake(serpent, dx, dy);
+            } 
 
             if (event.type == SDL_KEYDOWN) 
             {
@@ -505,7 +509,6 @@ void game_loop(SDL_Renderer *renderer,  Mix_Music **music,  Mix_Music **choc, Mi
 		    	Mix_PlayMusic(song[21], 1);
 		    	while(Mix_PlayingMusic());
 		    }
-            // SDL_Delay(2000);
             running = 0;
         }
 
@@ -616,7 +619,7 @@ void chargement(SDL_Renderer *renderer, SDL_Texture *chargementTexture, Mix_Musi
 	for (int i = 100; i <= 600; i += 100)
 	{
 		SDL_Rect charg = {i, 400, 100, 50};
-		SDL_Rect cadre = {200, 400, 400, 50};
+		SDL_Rect cadre = {100, 400, 400, 50};
 		SDL_Rect progres = {200,400, i, 50};
 		SDL_Rect img = {0, 0, SCREEN_WIDTH+200, SCREEN_HEIGHT};
 		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
