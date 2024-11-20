@@ -8,12 +8,13 @@ int main(int argc, char *argv[]) {
     SDL_Renderer *renderer = NULL;
     Mix_Music *mange;
     Mix_Music *music;
-    Mix_Music *song[30] = {NULL};    
+    Mix_Music *song[30] = {NULL}; 
+    TTF_Init();   
 
     if (!init(&window, &renderer, &music, &mange, song)) 
         return EXIT_FAILURE;
-            // Mix_PlayMusic(music, -1);
-
+            Mix_PlayMusic(music, -1);
+            SDL_Delay(1000);
        // while(Mix_PlayingMusic());
 
     if (!load_food_texture(renderer)) 
@@ -21,6 +22,7 @@ int main(int argc, char *argv[]) {
         cleanup(window, renderer, music, mange, song);
         return EXIT_FAILURE;
     }
+    chargement(renderer, chargementTexture, song);
 
     game_loop(renderer, &music, &mange, song);
 

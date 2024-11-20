@@ -36,6 +36,16 @@ extern int taille_serpent;
 extern int VITESSE;
 extern SDL_Texture *cadreTexture;
 extern coordonne food;
+extern SDL_Texture *foodTexture;
+extern SDL_Texture *cadreLateralTexture;
+extern SDL_Texture *bgTexture;
+extern SDL_Texture *chargementTexture;
+extern SDL_Texture *score[10];
+extern TTF_Font *font;
+// extern Mix_Music *song[]; 
+
+
+
 
 int init(SDL_Window **window, SDL_Renderer **renderer, Mix_Music **music,  Mix_Music **choc, Mix_Music *song[]);
 double distance(int x1, int y1, int x2, int y2);
@@ -50,7 +60,7 @@ void dessiner_bordure_blocs(SDL_Renderer *renderer);
 void game_loop(SDL_Renderer *renderer,  Mix_Music **music,  Mix_Music **choc, Mix_Music *song[]);
 void cleanup(SDL_Window *window, SDL_Renderer *renderer, Mix_Music *music, Mix_Music *choc, Mix_Music *song[]); 
 void renderTextCentered(SDL_Renderer *renderer, const char *text, TTF_Font *font, SDL_Color textColor, SDL_Rect *rect);
-void ecran_laterra(SDL_Renderer renderer);
+void chargement(SDL_Renderer *renderer, SDL_Texture *, Mix_Music *song[]);
 
 
 

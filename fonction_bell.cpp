@@ -1,11 +1,16 @@
 #include "fonction_bell.h"
 
 int taille_serpent = 0;
-int VITESSE = 90;
+int VITESSE = 120;
 SDL_Texture *cadreTexture = NULL;
 SDL_Texture *foodTexture = NULL;
 SDL_Texture *cadreLateralTexture = NULL;
 SDL_Texture *bgTexture = NULL;
+SDL_Texture *chargementTexture = NULL;
+SDL_Texture *score[10] = {NULL};
+TTF_Font *font = NULL;
+SDL_Texture *nom[] = {NULL};
+SDL_Color textColor = {237, 37, 207, 255};
 
 coordonne food;
 
@@ -84,6 +89,30 @@ int init(SDL_Window **window, SDL_Renderer **renderer, Mix_Music **music,  Mix_M
 	        return 0;
 	    }
 	}
+
+	font = TTF_OpenFont("data/polices/font.ttf", 50);
+	if(! font)
+	{
+		cout<<"Erreur chargement polices"<<SDL_GetError();
+		return 0;
+	}
+
+
+      for (int i = 0; i < 26; i++)
+    {
+	char nomFichier3[255];
+    	sprintf(nomFichier3,"data/texture/lettre_%d.png",i+1);
+    	SDL_Surface *nomSurface = IMG_Load(nomFichier3);
+
+  	  	nom[i] = SDL_CreateTextureFromSurface(*renderer, nomSurface);
+
+	    if (! nom[i])
+	    {
+	        cout<<"Erreur lecture musique "<<nomFichier3<<Mix_GetError()<<"\n";
+	        return 0;
+	    }
+	}
+
     return 1;
 }
 
@@ -159,6 +188,48 @@ int load_food_texture(SDL_Renderer *renderer)
     {
         cout<<"Erreur création texture bgLat: "<<SDL_GetError()<<"\n";
         return 0;
+    }
+
+    SDL_Surface *chargementSurface = IMG_Load("data/images/chargement.jpg");
+    
+    if (!chargementSurface) 
+    {
+        cout<<"Erreur chargement image cadre: "<<IMG_GetError()<<"\n";
+        return 0;
+    }
+
+    chargementTexture = SDL_CreateTextureFromSurface(renderer, chargementSurface);
+
+    SDL_FreeSurface(chargementSurface);
+
+    if (!chargementTexture) 
+    {
+        cout<<"Erreur création texture cadre: "<<SDL_GetError()<<"\n";
+        return 0;
+    }
+
+    for (int i = 0; i < 10; ++i)
+    {
+		char nomFichier2[255];
+	    sprintf(nomFichier2,"data/texture/%d.png",i);
+	    	
+	    SDL_Surface *scoreSurface = IMG_Load(nomFichier2);
+	    
+	    if (!scoreSurface) 
+	    {
+	        cout<<"Erreur chargement image score: "<<IMG_GetError()<<"\n";
+	        return 0;
+	    }
+
+	    score[i] = SDL_CreateTextureFromSurface(renderer, scoreSurface);
+
+	    SDL_FreeSurface(scoreSurface);
+
+	    if (!score[i]) 
+	    {
+	        cout<<"Erreur création texture score: "<<SDL_GetError()<<"\n";
+	        return 0;
+	    }
     }
     return 1;
 }
@@ -327,9 +398,14 @@ void game_loop(SDL_Renderer *renderer,  Mix_Music **music,  Mix_Music **choc, Mi
     serpent->next = NULL;
 
     int dx = RADIUS * 2, dy = 0;
+
     generate_food();
+
     SDL_Rect bg = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
     SDL_Rect bgLat = {SCREEN_WIDTH, 0, 200, SCREEN_HEIGHT};
+    SDL_Rect sc = {SCREEN_WIDTH+40, 21, 120, 120};
+    SDL_Rect scT = {SCREEN_WIDTH+40, 141, 120, 50};
+
     int running = 1;
 
     SDL_Event event;
@@ -399,17 +475,21 @@ void game_loop(SDL_Renderer *renderer,  Mix_Music **music,  Mix_Music **choc, Mi
         // Mise à jour
         update_snake(serpent, dx, dy);
 
-        // Mix_PlayMusic(music, 1);
+        SDL_RenderCopy(renderer, score[taille_serpent], NULL, &sc);
+
+        Mix_PlayMusic(*music, -1);
         // Mix_PlayingMusic();
         // Mix_Volume(2, 100);
         // Mix_Playing(1);
+        if(song[29])
+			Mix_PlayMusic(song[29], 1);
 
         if (distance(serpent->cercle.x, serpent->cercle.y, food.x, food.y) < RADIUS + FOOD_SIZE / 2) 
         {
         	 // Mix_PlayMusic(*choc, 1);
-        	if(song[26])
+        	if(song[3])
         	{
-				Mix_PlayMusic(song[26], 1);
+				Mix_PlayMusic(song[3], 1);
 				// while(Mix_PlayingMusic());
 			}
 
@@ -423,7 +503,7 @@ void game_loop(SDL_Renderer *renderer,  Mix_Music **music,  Mix_Music **choc, Mi
             if(song[21])
 		    {
 		    	Mix_PlayMusic(song[21], 1);
-		    	// while(Mix_PlayingMusic());
+		    	while(Mix_PlayingMusic());
 		    }
             // SDL_Delay(2000);
             running = 0;
@@ -433,6 +513,10 @@ void game_loop(SDL_Renderer *renderer,  Mix_Music **music,  Mix_Music **choc, Mi
 
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
+
+
+        SDL_RenderCopy(renderer, score[taille_serpent], NULL, &sc);
+        renderTextCentered(renderer, "score", font, textColor, &scT);
 
         SDL_RenderCopy(renderer, bgTexture, NULL, &bg);
         // SDL_RenderCopy(renderer, cadreLateralTexture, NULL, &bgLat);
@@ -480,7 +564,11 @@ void cleanup(SDL_Window *window, SDL_Renderer *renderer, Mix_Music *music, Mix_M
     	}
     }
 
+    if(font)
+    	TTF_CloseFont(font);
+
     Mix_CloseAudio();
+    TTF_Quit();
     Mix_Quit();
     IMG_Quit();
     SDL_Quit();
@@ -514,21 +602,46 @@ void renderTextCentered(SDL_Renderer *renderer, const char *text, TTF_Font *font
 
     SDL_FreeSurface(textSurface);
 
-    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderFillRect(renderer, rect);
 
     SDL_RenderCopy(renderer, textTexture, NULL, &textRect);
 
     SDL_DestroyTexture(textTexture);
 }
-
-void ecran_lateral(SDL_Renderer *renderer, TTF_Font *font, SDL_Color textColor)
+void chargement(SDL_Renderer *renderer, SDL_Texture *chargementTexture, Mix_Music *song[30])
 {
-	SDL_Rect lat={SCREEN_WIDTH, 0, 200, SCREEN_HEIGHT};
-    SDL_SetRenderDrawColor(renderer, 190, 80, 255, 255);
-    SDL_RenderFillRect(renderer, &lat);
-    SDL_Color color = {190, 80, 255, 255};
+	int n = 5;
+	int s = 12;
+	for (int i = 100; i <= 600; i += 100)
+	{
+		SDL_Rect charg = {i, 400, 100, 50};
+		SDL_Rect cadre = {200, 400, 400, 50};
+		SDL_Rect progres = {200,400, i, 50};
+		SDL_Rect img = {0, 0, SCREEN_WIDTH+200, SCREEN_HEIGHT};
+		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+		SDL_RenderDrawRect(renderer, &cadre);
+		SDL_RenderDrawRect(renderer, &charg);
+		SDL_RenderDrawRect(renderer, &progres);
+		SDL_RenderCopy(renderer, chargementTexture, NULL, &img);
+		SDL_SetRenderDrawColor(renderer, 237, 37, 207, 255);
+		SDL_RenderFillRect(renderer, &charg);
+		SDL_RenderFillRect(renderer, &progres);
+		SDL_RenderCopy(renderer, score[n], NULL, &charg);
 
-   renderTextCentered(renderer, "BELLO DEV", font, color, &lat);
-
+		SDL_RenderPresent(renderer);
+		if(s == 7)
+		{
+			Mix_PlayMusic(song[27], 1);
+			while(Mix_PlayingMusic());	
+		}
+		else
+		{
+			Mix_PlayMusic(song[s], 1);
+			while(Mix_PlayingMusic());
+		}
+		n--;
+		s--;
+		SDL_Delay(600);
+	}
 }
