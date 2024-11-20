@@ -9,7 +9,7 @@ SDL_Texture *bgTexture = NULL;
 SDL_Texture *chargementTexture = NULL;
 SDL_Texture *score[10] = {NULL};
 TTF_Font *font = NULL;
-SDL_Texture *nom[] = {NULL};
+SDL_Texture *nom[26] = {NULL};
 SDL_Color textColor = {237, 37, 207, 255};
 
 coordonne food;
@@ -20,7 +20,7 @@ double distance(int x1, int y1, int x2, int y2)
     return sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
 }
 
-int init(SDL_Window **window, SDL_Renderer **renderer, Mix_Music **music,  Mix_Music **choc, Mix_Music *song[])
+int init(SDL_Window **window, SDL_Renderer **renderer, Mix_Music **music,  Mix_Music **choc, Mix_Chunk *song[])
 {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) 
     {
@@ -81,7 +81,7 @@ int init(SDL_Window **window, SDL_Renderer **renderer, Mix_Music **music,  Mix_M
 	char nomFichier[255];
     	sprintf(nomFichier,"data/sons/Sound/common_ %d.wav",i+1);
 
-  	  	song[i] = Mix_LoadMUS(nomFichier);
+  	  	song[i] = Mix_LoadWAV(nomFichier);
 
 	    if (! song[i])
 	    {
@@ -382,7 +382,7 @@ void dessiner_bordure_blocs(SDL_Renderer *renderer)
 }
 
 // Boucle principale du jeu
-void game_loop(SDL_Renderer *renderer,  Mix_Music **music,  Mix_Music **choc, Mix_Music *song[]) 
+void game_loop(SDL_Renderer *renderer,  Mix_Music **music,  Mix_Music **choc, Mix_Chunk *song[]) 
 {
     Serpent *serpent = (Serpent *)malloc(sizeof(Serpent));
     
@@ -428,7 +428,8 @@ void game_loop(SDL_Renderer *renderer,  Mix_Music **music,  Mix_Music **choc, Mi
                     case SDLK_UP:
                     	if(song[4])
 						    {
-						    	Mix_PlayMusic(song[4], 1);
+						    	// Mix_PlayMusic(song[4], 1);
+                                Mix_PlayChannel(1, song[4], 0);
 						    	// while(Mix_PlayingMusic());
 						    }
                         if (dy == 0) {
@@ -440,7 +441,8 @@ void game_loop(SDL_Renderer *renderer,  Mix_Music **music,  Mix_Music **choc, Mi
                     case SDLK_DOWN:
                     	if(song[4])
                     	{
-						   	Mix_PlayMusic(song[4], 1);
+						   	// Mix_PlayMusic(song[4], 1);
+                            Mix_PlayChannel(1, song[4], 0);
 						    // while(Mix_PlayingMusic());
 						}
                         if (dy == 0) {
@@ -452,7 +454,8 @@ void game_loop(SDL_Renderer *renderer,  Mix_Music **music,  Mix_Music **choc, Mi
                     case SDLK_LEFT:
                     	if(song[4])
                     	{
-						    Mix_PlayMusic(song[4], 1);
+						    // Mix_PlayMusic(song[4], 1);
+                            Mix_PlayChannel(1, song[4], 0);
 						    // while(Mix_PlayingMusic());
 						}
                         if (dx == 0) {
@@ -464,7 +467,8 @@ void game_loop(SDL_Renderer *renderer,  Mix_Music **music,  Mix_Music **choc, Mi
                     case SDLK_RIGHT:
                     	if(song[4])
                     	{
-						    Mix_PlayMusic(song[4], 1);
+						    // Mix_PlayMusic(song[4], 1);
+                            Mix_PlayChannel(1, song[4], 0);
 						    // while(Mix_PlayingMusic());
 						}
                         if (dx == 0) {
@@ -481,19 +485,21 @@ void game_loop(SDL_Renderer *renderer,  Mix_Music **music,  Mix_Music **choc, Mi
 
         SDL_RenderCopy(renderer, score[taille_serpent], NULL, &sc);
 
-        Mix_PlayMusic(*music, -1);
+        // Mix_PlayMusic(*music, -1);
         // Mix_PlayingMusic();
-        // Mix_Volume(2, 100);
+        Mix_Volume(1, 9000000);
         // Mix_Playing(1);
-        if(song[29])
-			Mix_PlayMusic(song[29], 1);
+        // if(song[29])
+		// 	// Mix_PlayMusic(song[29], 1);
+        //     Mix_PlayChannel(1, song[29], 0);
 
         if (distance(serpent->cercle.x, serpent->cercle.y, food.x, food.y) < RADIUS + FOOD_SIZE / 2) 
         {
         	 // Mix_PlayMusic(*choc, 1);
         	if(song[3])
         	{
-				Mix_PlayMusic(song[3], 1);
+				// Mix_PlayMusic(song[3], 1);
+                Mix_PlayChannel(1, song[3], 0);
 				// while(Mix_PlayingMusic());
 			}
 
@@ -506,15 +512,16 @@ void game_loop(SDL_Renderer *renderer,  Mix_Music **music,  Mix_Music **choc, Mi
             printf("Game Over! Taille du serpent: %d\n", taille_serpent);
             if(song[21])
 		    {
-		    	Mix_PlayMusic(song[21], 1);
-		    	while(Mix_PlayingMusic());
+		    	// Mix_PlayMusic(song[21], 1);
+                Mix_PlayChannel(1, song[21], 0);
+		    	while(Mix_Playing(1));
 		    }
             running = 0;
         }
 
         // Affichage
 
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        SDL_SetRenderDrawColor(renderer, 0, 103, 0, 255);
         SDL_RenderClear(renderer);
 
 
@@ -541,7 +548,7 @@ void game_loop(SDL_Renderer *renderer,  Mix_Music **music,  Mix_Music **choc, Mi
     }
 }
 
-void cleanup(SDL_Window *window, SDL_Renderer *renderer, Mix_Music *music, Mix_Music *choc, Mix_Music *song[]) 
+void cleanup(SDL_Window *window, SDL_Renderer *renderer, Mix_Music *music, Mix_Music *choc, Mix_Chunk *song[]) 
 {
     if (cadreTexture) 
         SDL_DestroyTexture(cadreTexture);
@@ -562,9 +569,27 @@ void cleanup(SDL_Window *window, SDL_Renderer *renderer, Mix_Music *music, Mix_M
     {
     	if (song[i])
     	{
-    		Mix_FreeMusic(song[i]);
+    		Mix_FreeChunk(song[i]);
     		song[i] = NULL;
     	}
+    }
+
+    for (int i = 0; i < 26; ++i)
+    {
+        if (nom[i])
+        {
+            SDL_DestroyTexture(nom[i]);
+            nom[i] = NULL;
+        }
+    }
+
+    for (int i = 0; i < 10; ++i)
+    {
+        if (score[i])
+        {
+            SDL_DestroyTexture(score[i]);
+            score[i] = NULL;
+        }
     }
 
     if(font)
@@ -605,17 +630,18 @@ void renderTextCentered(SDL_Renderer *renderer, const char *text, TTF_Font *font
 
     SDL_FreeSurface(textSurface);
 
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_SetRenderDrawColor(renderer, 0, 103, 0, 255);
     SDL_RenderFillRect(renderer, rect);
 
     SDL_RenderCopy(renderer, textTexture, NULL, &textRect);
 
     SDL_DestroyTexture(textTexture);
 }
-void chargement(SDL_Renderer *renderer, SDL_Texture *chargementTexture, Mix_Music *song[30])
+void chargement(SDL_Renderer *renderer, SDL_Texture *chargementTexture, Mix_Chunk *song[30])
 {
 	int n = 5;
 	int s = 12;
+    // Mix_AllocateChannels(20);
 	for (int i = 100; i <= 600; i += 100)
 	{
 		SDL_Rect charg = {i, 400, 100, 50};
@@ -635,16 +661,18 @@ void chargement(SDL_Renderer *renderer, SDL_Texture *chargementTexture, Mix_Musi
 		SDL_RenderPresent(renderer);
 		if(s == 7)
 		{
-			Mix_PlayMusic(song[27], 1);
-			while(Mix_PlayingMusic());	
+			// Mix_PlayMusic(song[27], 1);
+            Mix_PlayChannel(1, song[27], 0);
+			// while(Mix_Playing(1));	
 		}
 		else
 		{
-			Mix_PlayMusic(song[s], 1);
-			while(Mix_PlayingMusic());
+			// Mix_PlayMusic(song[s], 1);
+            Mix_PlayChannel(1, song[s], 0);
+			// while(Mix_Playing(1));
 		}
 		n--;
 		s--;
-		SDL_Delay(600);
+		SDL_Delay(890);
 	}
 }
