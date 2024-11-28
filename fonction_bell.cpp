@@ -101,7 +101,7 @@ int init(SDL_Window **window, SDL_Renderer **renderer, Mix_Music **music,  Mix_M
       for (int i = 0; i < 26; i++)
     {
 	char nomFichier3[255];
-    	sprintf(nomFichier3,"data/texture/lettre_%d.png",i+1);
+    	sprintf(nomFichier3,"data/texture/nom/lettre_%d.png",i+1);
     	SDL_Surface *nomSurface = IMG_Load(nomFichier3);
 
   	  	nom[i] = SDL_CreateTextureFromSurface(*renderer, nomSurface);
@@ -211,7 +211,7 @@ int load_food_texture(SDL_Renderer *renderer)
     for (int i = 0; i < 10; ++i)
     {
 		char nomFichier2[255];
-	    sprintf(nomFichier2,"data/texture/%d.png",i);
+	    sprintf(nomFichier2,"data/texture/score/%d.png",i);
 	    	
 	    SDL_Surface *scoreSurface = IMG_Load(nomFichier2);
 	    
@@ -405,6 +405,8 @@ void game_loop(SDL_Renderer *renderer,  Mix_Music **music,  Mix_Music **choc, Mi
     SDL_Rect bgLat = {SCREEN_WIDTH, 0, 200, SCREEN_HEIGHT};
     SDL_Rect sc = {SCREEN_WIDTH+40, 21, 120, 120};
     SDL_Rect scT = {SCREEN_WIDTH+40, 141, 120, 50};
+    SDL_Rect lv = {SCREEN_WIDTH+40, 191, 120, 120};
+    SDL_Rect lvT = {SCREEN_WIDTH+40, 311, 120, 50};
 
     int running = 1;
 
@@ -484,6 +486,7 @@ void game_loop(SDL_Renderer *renderer,  Mix_Music **music,  Mix_Music **choc, Mi
         update_snake(serpent, dx, dy);
 
         SDL_RenderCopy(renderer, score[taille_serpent], NULL, &sc);
+        SDL_RenderCopy(renderer, score[2], NULL, &lv);
 
         // Mix_PlayMusic(*music, -1);
         // Mix_PlayingMusic();
@@ -526,7 +529,10 @@ void game_loop(SDL_Renderer *renderer,  Mix_Music **music,  Mix_Music **choc, Mi
 
 
         SDL_RenderCopy(renderer, score[taille_serpent], NULL, &sc);
+        SDL_RenderCopy(renderer, score[1], NULL, &lv);
+
         renderTextCentered(renderer, "score", font, textColor, &scT);
+        renderTextCentered(renderer, "level", font, textColor, &lvT);
 
         SDL_RenderCopy(renderer, bgTexture, NULL, &bg);
         // SDL_RenderCopy(renderer, cadreLateralTexture, NULL, &bgLat);
@@ -642,21 +648,50 @@ void chargement(SDL_Renderer *renderer, SDL_Texture *chargementTexture, Mix_Chun
 	int n = 5;
 	int s = 12;
     // Mix_AllocateChannels(20);
+    SDL_Rect name_prog1 = {330, 200, 60, 60};
+    SDL_Rect name_prog2 = {390, 200, 60, 60};
+    SDL_Rect name_prog3 = {450, 200, 60, 60};
+    SDL_Rect name_prog4 = {510, 200, 60, 60};
+    SDL_Rect name_prog5 = {570, 200, 60, 60};
+    SDL_Rect name_prog6 = {390, 260, 60, 60};
+    SDL_Rect name_prog7 = {450, 260, 60, 60};
+    SDL_Rect name_prog8 = {510, 260, 60, 60};
+
+
+            // SDL_RenderPresent(renderer);
+
+
 	for (int i = 100; i <= 600; i += 100)
 	{
 		SDL_Rect charg = {i, 400, 100, 50};
 		SDL_Rect cadre = {100, 400, 400, 50};
 		SDL_Rect progres = {200,400, i, 50};
 		SDL_Rect img = {0, 0, SCREEN_WIDTH+200, SCREEN_HEIGHT};
+
 		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+
 		SDL_RenderDrawRect(renderer, &cadre);
 		SDL_RenderDrawRect(renderer, &charg);
 		SDL_RenderDrawRect(renderer, &progres);
 		SDL_RenderCopy(renderer, chargementTexture, NULL, &img);
+
 		SDL_SetRenderDrawColor(renderer, 237, 37, 207, 255);
+        
 		SDL_RenderFillRect(renderer, &charg);
 		SDL_RenderFillRect(renderer, &progres);
 		SDL_RenderCopy(renderer, score[n], NULL, &charg);
+
+
+        SDL_RenderCopy(renderer, nom[1], NULL, &name_prog1);
+        SDL_RenderCopy(renderer, nom[4], NULL, &name_prog2);
+        SDL_RenderCopy(renderer, nom[11], NULL, &name_prog3);
+        SDL_RenderCopy(renderer, nom[11], NULL, &name_prog4);
+        SDL_RenderCopy(renderer, nom[14], NULL, &name_prog5);
+        SDL_RenderCopy(renderer, nom[3], NULL, &name_prog6);
+        SDL_RenderCopy(renderer, nom[4], NULL, &name_prog7);
+        SDL_RenderCopy(renderer, nom[21], NULL, &name_prog8);
+
+
 
 		SDL_RenderPresent(renderer);
 		if(s == 7)
