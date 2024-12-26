@@ -527,8 +527,9 @@ void game_loop(SDL_Renderer *renderer,  Mix_Music **music,  Mix_Music **choc, Mi
         SDL_SetRenderDrawColor(renderer, 0, 103, 0, 255);
         SDL_RenderClear(renderer);
 
-
-        SDL_RenderCopy(renderer, score[taille_serpent], NULL, &sc);
+        // if(score[taille_serpent])
+        //     SDL_RenderCopy(renderer, score[taille_serpent], NULL, &sc);
+        
         SDL_RenderCopy(renderer, score[1], NULL, &lv);
 
         renderTextCentered(renderer, "score", font, textColor, &scT);
