@@ -1,33 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.example.snake"
     android:versionCode="1"
     android:versionName="1.0"
     android:installLocation="auto">
 
     <!-- OpenGL ES 2.0 -->
-    <uses-feature android:glEsVersion="0x00020000" />
-
+    <uses-feature android:glEsVersion="0x00020000" android:required="true" />
+    
+    <!-- Touch screen support -->
+    <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+    
     <!-- Permissions -->
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" 
+                     android:maxSdkVersion="28" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" 
+                     android:maxSdkVersion="28" />
+    
+    <!-- For Android 11+ storage access -->
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
+                     tools:ignore="ScopedStorage" />
 
     <application
         android:label="Snake SDL2"
         android:icon="@mipmap/ic_launcher"
         android:allowBackup="true"
-        android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
-        android:hardwareAccelerated="true">
+        android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
+        android:hardwareAccelerated="true"
+        android:requestLegacyExternalStorage="true">
 
         <activity
             android:name=".MainActivity"
             android:label="Snake SDL2"
+            android:exported="true"
             android:alwaysRetainTaskState="true"
             android:launchMode="singleInstance"
+            android:screenOrientation="landscape"
             android:configChanges="layoutDirection|locale|orientation|uiMode|screenLayout|screenSize|smallestScreenSize|keyboardHidden|keyboard|navigation|fontScale|density">
+            
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            
+            <!-- Declare that this activity handles native events from SDL -->
+            <meta-data android:name="android.app.lib_name" android:value="snake" />
         </activity>
     </application>
 </manifest>

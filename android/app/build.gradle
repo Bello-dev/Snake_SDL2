@@ -1,0 +1,75 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.example.snake'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.example.snake"
+        minSdk 21
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+
+        ndk {
+            abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            jniDebuggable true
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    externalNativeBuild {
+        ndkBuild {
+            path 'jni/Android.mk'
+        }
+    }
+
+    sourceSets {
+        main {
+            java.srcDirs = ['src/main/java']
+            jni.srcDirs = []  // This prevents the auto generation of Android.mk
+            jniLibs.srcDir 'src/main/jniLibs' // Pre-compiled libraries location
+        }
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+}
+
+// Download SDL2 if not already present
+task downloadSDL2 {
+    doLast {
+        def sdlDir = file('jni/SDL2')
+        if (!sdlDir.exists()) {
+            println "SDL2 not found. Please download SDL2 source with Android support."
+            println "1. Download SDL2-2.28.5.tar.gz from https://www.libsdl.org/download-2.0.php"
+            println "2. Extract to android/app/jni/SDL2/"
+            println "3. Ensure SDL2/Android.mk exists"
+            throw new GradleException("SDL2 source not found in jni/SDL2/")
+        }
+    }
+}
+
+// Make sure SDL2 is present before building
+preBuild.dependsOn downloadSDL2
