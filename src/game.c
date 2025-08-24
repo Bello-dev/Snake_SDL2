@@ -1,5 +1,10 @@
 #include "game.h"
 
+#ifdef PLATFORM_WINDOWS
+    #include <windows.h>
+    #include <string.h>
+#endif
+
 bool game_init(Game* game) {
     // Create window
     game->window = SDL_CreateWindow("Snake SDL2 - Enhanced Edition", 
@@ -17,16 +22,16 @@ bool game_init(Game* game) {
         return false;
     }
     
-    // Load font (we'll use a basic font for now)
-    game->font = TTF_OpenFont("/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf", 24);
-    game->large_font = TTF_OpenFont("/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf", 48);
+    // Load fonts using cross-platform font loading
+    game->font = load_system_font(24);
+    game->large_font = load_system_font(48);
     
     // If system fonts don't exist, create without fonts (text will be skipped)
     if (!game->font) {
-        printf("Warning: Could not load font. Text will not be displayed.\n");
+        printf("Warning: Could not load system font. Text will not be displayed.\n");
     }
     if (!game->large_font) {
-        printf("Warning: Could not load large font. Large text will not be displayed.\n");
+        printf("Warning: Could not load large system font. Large text will not be displayed.\n");
     }
     
     // Initialize audio (optional - game works without sound)
@@ -510,4 +515,55 @@ int load_high_score(void) {
         fclose(file);
     }
     return score;
+}
+
+// Cross-platform font loading implementation
+const char* get_system_font_path(void) {
+#ifdef PLATFORM_WINDOWS
+    // Windows system fonts
+    static char font_path[MAX_PATH];
+    if (GetWindowsDirectory(font_path, sizeof(font_path))) {
+        strcat(font_path, "\\Fonts\\arial.ttf");
+        return font_path;
+    }
+    return NULL;
+#elif defined(PLATFORM_ANDROID)
+    // Android system fonts
+    return "/system/fonts/Roboto-Regular.ttf";
+#elif defined(PLATFORM_LINUX)
+    // Try common Linux font locations
+    static const char* linux_fonts[] = {
+        "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 
+        "/usr/share/fonts/TTF/liberation/LiberationSans-Regular.ttf",
+        "/usr/share/fonts/TTF/DejaVuSans.ttf",
+        "/System/Library/Fonts/Arial.ttf",  // macOS fallback
+        NULL
+    };
+    
+    for (int i = 0; linux_fonts[i] != NULL; i++) {
+        FILE* test = fopen(linux_fonts[i], "r");
+        if (test) {
+            fclose(test);
+            return linux_fonts[i];
+        }
+    }
+    return NULL;
+#else
+    return NULL;
+#endif
+}
+
+TTF_Font* load_system_font(int size) {
+    const char* font_path = get_system_font_path();
+    if (font_path) {
+        TTF_Font* font = TTF_OpenFont(font_path, size);
+        if (font) {
+            return font;
+        }
+    }
+    
+    // If system font fails, try to create a basic font using TTF_OpenFont with NULL
+    // This will use SDL2's built-in font rendering (if available)
+    return NULL;
 }

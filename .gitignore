@@ -1,8 +1,34 @@
 # Build artifacts
 build/
+cmake_build/
 snake
 *.o
 *.exe
+*.dll
+*.so
+*.dylib
+
+# CMake files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+
+# Visual Studio
+.vs/
+*.vcxproj*
+*.sln
+*.user
+
+# Android build artifacts
+android/app/build/
+android/app/.externalNativeBuild/
+android/build/
+android/.gradle/
+android/local.properties
+*.apk
+*.aab
 
 # Game data files
 highscore.dat
