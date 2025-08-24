@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(Snake_SDL2 VERSION 1.0.0 LANGUAGES C)
+project(Snake_SDL3 VERSION 1.0.0 LANGUAGES C)
 
 # Set C standard
 set(CMAKE_C_STANDARD 99)
@@ -25,30 +25,30 @@ endif()
 # Find required packages
 find_package(PkgConfig REQUIRED)
 
-# SDL2 configuration
+# SDL3 configuration
 if(PLATFORM_WINDOWS)
-    # Windows: Use vcpkg or manual SDL2 installation
-    find_package(SDL2 REQUIRED)
-    find_package(SDL2_ttf REQUIRED) 
-    find_package(SDL2_mixer REQUIRED)
+    # Windows: Use vcpkg or manual SDL3 installation
+    find_package(SDL3 REQUIRED)
+    find_package(SDL3_ttf REQUIRED) 
+    find_package(SDL3_mixer REQUIRED)
     
-    set(SDL_LIBRARIES SDL2::SDL2 SDL2::SDL2main SDL2_ttf::SDL2_ttf SDL2_mixer::SDL2_mixer)
+    set(SDL_LIBRARIES SDL3::SDL3 SDL3::SDL3main SDL3_ttf::SDL3_ttf SDL3_mixer::SDL3_mixer)
 elseif(PLATFORM_ANDROID)
-    # Android: SDL2 will be handled by the Android build system
-    find_library(SDL2_LIBRARY SDL2)
-    find_library(SDL2_TTF_LIBRARY SDL2_ttf)
-    find_library(SDL2_MIXER_LIBRARY SDL2_mixer)
+    # Android: SDL3 will be handled by the Android build system
+    find_library(SDL3_LIBRARY SDL3)
+    find_library(SDL3_TTF_LIBRARY SDL3_ttf)
+    find_library(SDL3_MIXER_LIBRARY SDL3_mixer)
     
-    set(SDL_LIBRARIES ${SDL2_LIBRARY} ${SDL2_TTF_LIBRARY} ${SDL2_MIXER_LIBRARY})
+    set(SDL_LIBRARIES ${SDL3_LIBRARY} ${SDL3_TTF_LIBRARY} ${SDL3_MIXER_LIBRARY})
 else()
     # Linux/Unix: Use pkg-config
-    pkg_check_modules(SDL2 REQUIRED sdl2)
-    pkg_check_modules(SDL2_TTF REQUIRED SDL2_ttf)
-    pkg_check_modules(SDL2_MIXER REQUIRED SDL2_mixer)
+    pkg_check_modules(SDL3 REQUIRED sdl3)
+    pkg_check_modules(SDL3_TTF REQUIRED SDL3_ttf)
+    pkg_check_modules(SDL3_MIXER REQUIRED SDL3_mixer)
     
-    set(SDL_LIBRARIES ${SDL2_LIBRARIES} ${SDL2_TTF_LIBRARIES} ${SDL2_MIXER_LIBRARIES})
-    set(SDL_INCLUDE_DIRS ${SDL2_INCLUDE_DIRS} ${SDL2_TTF_INCLUDE_DIRS} ${SDL2_MIXER_INCLUDE_DIRS})
-    set(SDL_CFLAGS ${SDL2_CFLAGS_OTHER} ${SDL2_TTF_CFLAGS_OTHER} ${SDL2_MIXER_CFLAGS_OTHER})
+    set(SDL_LIBRARIES ${SDL3_LIBRARIES} ${SDL3_TTF_LIBRARIES} ${SDL3_MIXER_LIBRARIES})
+    set(SDL_INCLUDE_DIRS ${SDL3_INCLUDE_DIRS} ${SDL3_TTF_INCLUDE_DIRS} ${SDL3_MIXER_INCLUDE_DIRS})
+    set(SDL_CFLAGS ${SDL3_CFLAGS_OTHER} ${SDL3_TTF_CFLAGS_OTHER} ${SDL3_MIXER_CFLAGS_OTHER})
 endif()
 
 # Source files
@@ -78,10 +78,10 @@ if(PLATFORM_WINDOWS)
     set_target_properties(snake PROPERTIES WIN32_EXECUTABLE TRUE)
     
     # Copy SDL DLLs to output directory on Windows
-    if(TARGET SDL2::SDL2)
+    if(TARGET SDL3::SDL3)
         add_custom_command(TARGET snake POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            $<TARGET_FILE:SDL2::SDL2>
+            $<TARGET_FILE:SDL3::SDL3>
             $<TARGET_FILE_DIR:snake>)
     endif()
 elseif(PLATFORM_ANDROID)

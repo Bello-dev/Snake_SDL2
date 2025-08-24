@@ -1,8 +1,8 @@
 @echo off
-REM Windows build script for Snake SDL2
-REM Requirements: Visual Studio Build Tools, CMake, vcpkg (for SDL2)
+REM Windows build script for Snake SDL3
+REM Requirements: Visual Studio Build Tools, CMake, vcpkg (for SDL3)
 
-echo Building Snake SDL2 for Windows...
+echo Building Snake SDL3 for Windows...
 
 REM Check if CMake is available
 cmake --version >nul 2>&1
@@ -21,8 +21,8 @@ echo Configuring project...
 cmake .. -DCMAKE_TOOLCHAIN_FILE=%VCPKG_ROOT%/scripts/buildsystems/vcpkg.cmake
 if %errorlevel% neq 0 (
     echo Error: CMake configuration failed
-    echo Make sure SDL2, SDL2_ttf, and SDL2_mixer are installed via vcpkg:
-    echo   vcpkg install sdl2 sdl2-ttf sdl2-mixer
+    echo Make sure SDL3, SDL3_ttf, and SDL3_mixer are installed via vcpkg:
+    echo   vcpkg install sdl3 sdl3-ttf sdl3-mixer
     exit /b 1
 )
 
