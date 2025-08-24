@@ -47,6 +47,18 @@ snake.exe
 ```
 
 ### Android
+```bash
+# Quick build (with automated setup)
+./build_android.sh
+
+# Manual build
+cd android
+./gradlew assembleDebug
+
+# Install on device
+adb install android/app/build/outputs/apk/debug/app-debug.apk
+```
+
 See `android/README.md` for detailed Android build instructions.
 
 ## 🛠️ Manual Build (CMake)
@@ -92,8 +104,11 @@ Runtime platform detection enables platform-specific optimizations:
 - Proper file path handling per platform
 
 ### Input Handling
-- **Desktop**: Keyboard controls (Arrow keys, WASP, Space, Escape)
-- **Android**: Touch controls with virtual D-pad (future enhancement)
+- **Desktop**: Keyboard controls (Arrow keys, WASD, Space, Escape)
+- **Android**: Touch controls with swipe gestures and tap support
+  - Swipe gestures for directional movement
+  - Tap to pause/resume game
+  - Back button for exit
 
 ## 📁 Project Structure
 ```
@@ -101,7 +116,8 @@ Snake_SDL2/
 ├── src/              # Cross-platform game source
 ├── build_linux.sh    # Linux build script
 ├── build_windows.bat # Windows build script  
-├── android/          # Android project files
+├── build_android.sh   # Android build script
+├── android/          # Complete Android project implementation
 ├── CMakeLists.txt    # CMake build configuration
 ├── Makefile          # Legacy Linux Makefile (still works)
 └── CROSS_PLATFORM.md # This documentation
@@ -120,9 +136,10 @@ Snake_SDL2/
 - **DLL missing**: Ensure SDL2 DLLs are in PATH or same directory
 
 ### Android Issues
-- **NDK not found**: Install Android NDK via SDK Manager
-- **SDL2 missing**: Download SDL2 source with Android support
-- **Gradle errors**: Check Android SDK/NDK versions
+- **NDK not found**: Install Android NDK via SDK Manager or set ANDROID_NDK_HOME
+- **SDL2 missing**: Download SDL2 source with Android support to android/app/jni/SDL2/
+- **Gradle errors**: Check Android SDK/NDK versions compatibility
+- **APK crashes**: Check logcat for native library loading issues
 
 ## 🎯 Platform-Specific Notes
 
@@ -139,15 +156,20 @@ Snake_SDL2/
 - Static linking option available
 
 ### Android  
-- Minimum API level 21 (Android 5.0)
-- ARM and x86 architectures supported
-- Touch input adaptation needed
-- APK signing required for distribution
+- Minimum API level 21 (Android 5.0+)
+- ARM64, ARM32, and x86/x86_64 architectures supported  
+- Complete touch input implementation with swipe gestures
+- Landscape orientation optimized for gameplay
+- Immersive fullscreen with system UI hiding
+- Proper asset management and font loading
+- APK ready for Play Store distribution
 
 ## 🚀 Future Enhancements
 - [ ] iOS support via SDL2
-- [ ] macOS native build
+- [ ] macOS native build  
 - [ ] WebAssembly (Emscripten) support
-- [ ] Touch controls for mobile platforms
+- [x] Touch controls for mobile platforms ✅
 - [ ] Platform-specific UI scaling
 - [ ] Distribution packages (AppImage, MSI, APK)
+- [ ] Haptic feedback for Android
+- [ ] Android TV support

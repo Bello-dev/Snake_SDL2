@@ -19,7 +19,9 @@ build_windows.bat && cd build\Release && snake.exe
 ```
 
 #### 🤖 Android
-Voir `android/README.md` pour les instructions complètes.
+```bash
+./build_android.sh && adb install android/app/build/outputs/apk/debug/app-debug.apk
+```
 
 📖 **Guide complet** : [CROSS_PLATFORM.md](CROSS_PLATFORM.md)
 
