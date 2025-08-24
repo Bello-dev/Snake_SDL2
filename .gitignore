@@ -1,0 +1,27 @@
+# Build artifacts
+build/
+snake
+*.o
+*.exe
+
+# Game data files
+highscore.dat
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.bak
+
+# Debug files
+*.dSYM/
+*.pdb
