@@ -15,6 +15,23 @@
 #define M_PI 3.14159265358979323846
 #endif
 
+// Platform detection
+#ifdef _WIN32
+    #define PLATFORM_WINDOWS
+#elif defined(__ANDROID__)
+    #define PLATFORM_ANDROID
+#elif defined(__linux__)
+    #define PLATFORM_LINUX
+#elif defined(__APPLE__)
+    #define PLATFORM_APPLE
+#endif
+
+// Platform-specific includes
+#ifdef PLATFORM_WINDOWS
+    #include <windows.h>
+    #include <shlobj.h>
+#endif
+
 // Screen dimensions
 #define SCREEN_WIDTH 800
 #define SCREEN_HEIGHT 600
@@ -217,5 +234,9 @@ void get_food_color(FoodType type, Uint8* r, Uint8* g, Uint8* b);
 // Save/Load system
 void save_high_score(int score);
 int load_high_score(void);
+
+// Cross-platform font loading
+TTF_Font* load_system_font(int size);
+const char* get_system_font_path(void);
 
 #endif

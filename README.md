@@ -2,6 +2,27 @@
 
 Un jeu de serpent **révolutionnaire** développé en C utilisant SDL2, transformé en une expérience gaming moderne avec des effets visuels spectaculaires, un système de pouvoirs magiques et une gameplay immersive qui redéfinit le classique Snake!
 
+## 🌍 **NOUVEAU : Support Multi-Plateforme**
+
+**Snake SDL2** fonctionne maintenant sur **Windows, Linux ET Android** ! 🚀
+
+### Installation Rapide par Plateforme
+
+#### 🐧 Linux
+```bash
+./build_linux.sh && cd build && ./snake
+```
+
+#### 🪟 Windows  
+```cmd
+build_windows.bat && cd build\Release && snake.exe
+```
+
+#### 🤖 Android
+Voir `android/README.md` pour les instructions complètes.
+
+📖 **Guide complet** : [CROSS_PLATFORM.md](CROSS_PLATFORM.md)
+
 ## 🌟 Fonctionnalités Révolutionnaires
 
 ### 🎮 Gameplay Enrichie
