@@ -12,16 +12,19 @@ Un jeu de serpent **révolutionnaire** développé en C utilisant SDL3, transfor
 ```bash
 ./build_linux.sh && cd build && ./snake
 ```
+*Installation automatique des dépendances incluse*
 
 #### 🪟 Windows  
 ```cmd
 build_windows.bat && cd build\Release && snake.exe
 ```
+*Configuration automatique via vcpkg/Chocolatey*
 
 #### 🤖 Android
 ```bash
 ./build_android.sh && adb install android/app/build/outputs/apk/debug/app-debug.apk
 ```
+*Installation SDK/NDK et téléchargement SDL3 automatiques*
 
 📖 **Guide complet** : [CROSS_PLATFORM.md](CROSS_PLATFORM.md)
 
