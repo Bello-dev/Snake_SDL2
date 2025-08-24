@@ -54,6 +54,31 @@ typedef enum {
     DIR_RIGHT
 } Direction;
 
+// Food types with special effects
+typedef enum {
+    FOOD_NORMAL,      // Regular food, grows snake
+    FOOD_SPEED,       // Temporary speed boost
+    FOOD_DOUBLE,      // Double score for next few foods
+    FOOD_GOLDEN,      // High score bonus
+    FOOD_SHRINK,      // Shrinks snake by 1-2 segments
+    FOOD_PHASE,       // Temporary wall phasing ability
+    FOOD_MEGA,        // Massive score bonus, very rare
+    FOOD_TYPE_COUNT
+} FoodType;
+
+// Power-up states
+typedef struct {
+    bool speed_boost;
+    bool double_score;
+    bool phase_through_walls;
+    Uint32 speed_end_time;
+    Uint32 double_score_end_time;
+    Uint32 phase_end_time;
+    int combo_multiplier;
+    int combo_count;
+    Uint32 last_food_time;
+} PowerUps;
+
 // Particle for visual effects
 typedef struct {
     float x, y;
@@ -81,6 +106,10 @@ typedef struct {
 typedef struct {
     int x, y;
     bool active;
+    FoodType type;
+    float spawn_time;
+    float pulse_phase;
+    float glow_intensity;
 } Food;
 
 // Game structure
@@ -111,9 +140,22 @@ typedef struct {
     Particle particles[MAX_PARTICLES];
     int particle_count;
     
-    // Statistics
+    // Power-up system
+    PowerUps power_ups;
+    
+    // Level system
+    int level;
+    int foods_needed_for_level;
+    int base_score_per_food;
+    
+    // Enhanced statistics
     int foods_eaten;
+    int special_foods_eaten;
     Uint32 game_start_time;
+    
+    // Screen effects
+    float screen_shake_intensity;
+    Uint32 screen_shake_end_time;
 } Game;
 
 // Function declarations
@@ -134,23 +176,46 @@ void snake_change_direction(Snake* snake, Direction new_dir);
 // Food functions
 void food_spawn(Food* food, Snake* snake);
 bool food_check_collision(Food* food, Snake* snake);
+FoodType food_get_random_type(int level, int foods_eaten);
+void food_apply_effect(Game* game, FoodType type);
+
+// Power-up functions
+void powerups_init(PowerUps* power_ups);
+void powerups_update(PowerUps* power_ups, Uint32 current_time);
+bool powerups_is_speed_active(PowerUps* power_ups);
+bool powerups_is_double_score_active(PowerUps* power_ups);
+bool powerups_is_phase_active(PowerUps* power_ups);
+int powerups_get_score_multiplier(PowerUps* power_ups);
+
+// Level functions
+void level_up(Game* game);
+int level_get_required_foods(int level);
+Uint32 level_get_speed(int level, bool speed_boost);
 
 // Rendering functions
-void render_snake(SDL_Renderer* renderer, Snake* snake);
-void render_food(SDL_Renderer* renderer, Food* food, float pulse);
+void render_snake(SDL_Renderer* renderer, Snake* snake, PowerUps* power_ups);
+void render_food(SDL_Renderer* renderer, Food* food);
 void render_ui(Game* game);
 void render_menu(Game* game);
 void render_game_over(Game* game);
 void render_particles(Game* game);
+void render_power_up_indicators(Game* game);
 
 // Particle functions
 void add_particle(Game* game, float x, float y, float vx, float vy, Uint8 r, Uint8 g, Uint8 b);
 void update_particles(Game* game);
-void spawn_food_particles(Game* game, int x, int y);
+void spawn_food_particles(Game* game, int x, int y, FoodType type);
+void spawn_power_up_particles(Game* game, int x, int y, FoodType type);
 
 // Utility functions
 void set_color(SDL_Renderer* renderer, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
 void draw_rounded_rect(SDL_Renderer* renderer, int x, int y, int w, int h, int radius);
 void render_gradient_background(SDL_Renderer* renderer);
+void add_screen_shake(Game* game, float intensity, Uint32 duration);
+void get_food_color(FoodType type, Uint8* r, Uint8* g, Uint8* b);
+
+// Save/Load system
+void save_high_score(int score);
+int load_high_score(void);
 
 #endif
