@@ -1,9 +1,15 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include <SDL3/SDL.h>
-#include <SDL3_ttf/SDL_ttf.h>
-#include <SDL3_mixer/SDL_mixer.h>
+#ifdef USING_SDL2_FALLBACK
+    #include <SDL2/SDL.h>
+    #include <SDL2/SDL_ttf.h>
+    #include <SDL2/SDL_mixer.h>
+#else
+    #include <SDL3/SDL.h>
+    #include <SDL3_ttf/SDL_ttf.h>
+    #include <SDL3_mixer/SDL_mixer.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>

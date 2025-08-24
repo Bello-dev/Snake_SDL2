@@ -41,14 +41,28 @@ elseif(PLATFORM_ANDROID)
     
     set(SDL_LIBRARIES ${SDL3_LIBRARY} ${SDL3_TTF_LIBRARY} ${SDL3_MIXER_LIBRARY})
 else()
-    # Linux/Unix: Use pkg-config
-    pkg_check_modules(SDL3 REQUIRED sdl3)
-    pkg_check_modules(SDL3_TTF REQUIRED SDL3_ttf)
-    pkg_check_modules(SDL3_MIXER REQUIRED SDL3_mixer)
-    
-    set(SDL_LIBRARIES ${SDL3_LIBRARIES} ${SDL3_TTF_LIBRARIES} ${SDL3_MIXER_LIBRARIES})
-    set(SDL_INCLUDE_DIRS ${SDL3_INCLUDE_DIRS} ${SDL3_TTF_INCLUDE_DIRS} ${SDL3_MIXER_INCLUDE_DIRS})
-    set(SDL_CFLAGS ${SDL3_CFLAGS_OTHER} ${SDL3_TTF_CFLAGS_OTHER} ${SDL3_MIXER_CFLAGS_OTHER})
+    # Linux/Unix: Use pkg-config, try SDL3 first, fallback to SDL2
+    pkg_check_modules(SDL3 QUIET sdl3)
+    if(SDL3_FOUND)
+        pkg_check_modules(SDL3_TTF REQUIRED SDL3_ttf)
+        pkg_check_modules(SDL3_MIXER REQUIRED SDL3_mixer)
+        
+        set(SDL_LIBRARIES ${SDL3_LIBRARIES} ${SDL3_TTF_LIBRARIES} ${SDL3_MIXER_LIBRARIES})
+        set(SDL_INCLUDE_DIRS ${SDL3_INCLUDE_DIRS} ${SDL3_TTF_INCLUDE_DIRS} ${SDL3_MIXER_INCLUDE_DIRS})
+        set(SDL_CFLAGS ${SDL3_CFLAGS_OTHER} ${SDL3_TTF_CFLAGS_OTHER} ${SDL3_MIXER_CFLAGS_OTHER})
+        message(STATUS "Using SDL3")
+    else()
+        # Fallback to SDL2
+        message(STATUS "SDL3 not found, falling back to SDL2")
+        pkg_check_modules(SDL2 REQUIRED sdl2)
+        pkg_check_modules(SDL2_TTF REQUIRED SDL2_ttf)
+        pkg_check_modules(SDL2_MIXER REQUIRED SDL2_mixer)
+        
+        set(SDL_LIBRARIES ${SDL2_LIBRARIES} ${SDL2_TTF_LIBRARIES} ${SDL2_MIXER_LIBRARIES})
+        set(SDL_INCLUDE_DIRS ${SDL2_INCLUDE_DIRS} ${SDL2_TTF_INCLUDE_DIRS} ${SDL2_MIXER_INCLUDE_DIRS})
+        set(SDL_CFLAGS ${SDL2_CFLAGS_OTHER} ${SDL2_TTF_CFLAGS_OTHER} ${SDL2_MIXER_CFLAGS_OTHER})
+        add_compile_definitions(USING_SDL2_FALLBACK)
+    endif()
 endif()
 
 # Source files

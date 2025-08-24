@@ -10,14 +10,22 @@ if ! command -v cmake &> /dev/null; then
     exit 1
 fi
 
-# Check if SDL3 development libraries are installed
+# Check if SDL3 development libraries are installed, fallback to SDL2
 if ! pkg-config --exists sdl3; then
-    echo "Error: SDL3 development libraries not found"
-    echo "Install with:"
-    echo "  Ubuntu/Debian: sudo apt install libsdl3-dev libsdl3-ttf-dev libsdl3-mixer-dev"
-    echo "  Fedora: sudo dnf install SDL3-devel SDL3_ttf-devel SDL3_mixer-devel"
-    echo "  Arch: sudo pacman -S sdl3 sdl3_ttf sdl3_mixer"
-    exit 1
+    echo "Warning: SDL3 development libraries not found, trying SDL2 as fallback"
+    if ! pkg-config --exists sdl2; then
+        echo "Error: Neither SDL3 nor SDL2 development libraries found"
+        echo "Install with:"
+        echo "  For SDL3 (preferred): sudo apt install libsdl3-dev libsdl3-ttf-dev libsdl3-mixer-dev"
+        echo "  For SDL2 (fallback): sudo apt install libsdl2-dev libsdl2-ttf-dev libsdl2-mixer-dev"
+        echo "  Fedora: sudo dnf install SDL3-devel SDL3_ttf-devel SDL3_mixer-devel"
+        echo "  Arch: sudo pacman -S sdl3 sdl3_ttf sdl3_mixer"
+        exit 1
+    else
+        echo "✅ Using SDL2 as fallback (SDL3 preferred but not available)"
+    fi
+else
+    echo "✅ SDL3 development libraries found"
 fi
 
 # Create build directory

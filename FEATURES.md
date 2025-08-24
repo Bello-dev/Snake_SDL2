@@ -1,4 +1,4 @@
-# 🐍 Snake SDL2 - Édition Ultime 
+# 🐍 Snake SDL3 - Édition Ultime 
 
 ## Nouvelles Fonctionnalités Implémentées ✨
 

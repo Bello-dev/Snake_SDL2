@@ -1,6 +1,6 @@
-# Cross-Platform Build Guide for Snake SDL2
+# Cross-Platform Build Guide for Snake SDL3
 
-Snake SDL2 now supports building and running on multiple platforms: **Windows**, **Linux**, and **Android**.
+Snake SDL3 now supports building and running on multiple platforms: **Windows**, **Linux**, and **Android**.
 
 ## 🚀 Quick Start
 
@@ -18,7 +18,7 @@ cd build && ./snake
 ### Linux (Fedora/RHEL/CentOS)
 ```bash
 # Install dependencies
-sudo dnf install gcc cmake SDL2-devel SDL2_ttf-devel SDL2_mixer-devel
+sudo dnf install gcc cmake SDL3-devel SDL3_ttf-devel SDL3_mixer-devel
 
 # Build and run
 ./build_linux.sh
@@ -66,7 +66,7 @@ See `android/README.md` for detailed Android build instructions.
 ### Prerequisites
 - CMake 3.10 or higher
 - C compiler (GCC, Clang, MSVC)
-- SDL2, SDL2_ttf, SDL2_mixer development libraries
+- SDL3, SDL3_ttf, SDL3_mixer development libraries
 
 ### Build Steps
 ```bash
@@ -112,7 +112,7 @@ Runtime platform detection enables platform-specific optimizations:
 
 ## 📁 Project Structure
 ```
-Snake_SDL2/
+Snake_SDL3/
 ├── src/              # Cross-platform game source
 ├── build_linux.sh    # Linux build script
 ├── build_windows.bat # Windows build script  
@@ -126,18 +126,18 @@ Snake_SDL2/
 ## 🔧 Troubleshooting
 
 ### Linux Issues
-- **SDL2 not found**: Install dev packages (`libsdl2-dev`)
+- **SDL3 not found**: Install dev packages (`libsdl2-dev`)
 - **Permission denied**: Make sure `build_linux.sh` is executable
 - **Audio warnings**: Normal in headless/VM environments
 
 ### Windows Issues  
-- **SDL2 not found**: Install via vcpkg or download SDL2 dev libraries
+- **SDL3 not found**: Install via vcpkg or download SDL3 dev libraries
 - **MSVC not found**: Install Visual Studio Build Tools
-- **DLL missing**: Ensure SDL2 DLLs are in PATH or same directory
+- **DLL missing**: Ensure SDL3 DLLs are in PATH or same directory
 
 ### Android Issues
 - **NDK not found**: Install Android NDK via SDK Manager or set ANDROID_NDK_HOME
-- **SDL2 missing**: Download SDL2 source with Android support to android/app/jni/SDL2/
+- **SDL3 missing**: Download SDL3 source with Android support to android/app/jni/SDL3/
 - **Gradle errors**: Check Android SDK/NDK versions compatibility
 - **APK crashes**: Check logcat for native library loading issues
 
@@ -147,7 +147,7 @@ Snake_SDL2/
 - Supports Windows 7 and later
 - Uses system fonts (Arial fallback)
 - Hardware-accelerated rendering via DirectX/OpenGL
-- Executable requires SDL2 DLLs
+- Executable requires SDL3 DLLs
 
 ### Linux
 - Supports most modern distributions
@@ -165,7 +165,7 @@ Snake_SDL2/
 - APK ready for Play Store distribution
 
 ## 🚀 Future Enhancements
-- [ ] iOS support via SDL2
+- [ ] iOS support via SDL3
 - [ ] macOS native build  
 - [ ] WebAssembly (Emscripten) support
 - [x] Touch controls for mobile platforms ✅
