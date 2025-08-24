@@ -4,6 +4,9 @@ snake
 *.o
 *.exe
 
+# Game data files
+highscore.dat
+
 # IDE and editor files
 .vscode/
 .idea/
