@@ -1,6 +1,6 @@
-# Snake SDL2 - Enhanced Edition
+# Snake SDL3 - Enhanced Edition
 
-Un jeu de serpent classique développé en C en utilisant la bibliothèque SDL2 sur Linux, avec des améliorations visuelles et de gameplay modernes.
+Un jeu de serpent classique développé en C en utilisant la bibliothèque SDL3 sur Linux, avec des améliorations visuelles et de gameplay modernes.
 
 ## Nouvelles Fonctionnalités - Version Améliorée
 
@@ -42,12 +42,12 @@ Un jeu de serpent classique développé en C en utilisant la bibliothèque SDL2 
 
 ## Description
 
-Ce projet implémente le jeu classique Snake en utilisant le langage C et la bibliothèque SDL2 pour le rendu graphique et la gestion des événements. Cette version améliorée offre une expérience visuelle moderne et un gameplay enrichi.
+Ce projet implémente le jeu classique Snake en utilisant le langage C et la bibliothèque SDL3 pour le rendu graphique et la gestion des événements. Cette version améliorée offre une expérience visuelle moderne et un gameplay enrichi.
 
 ## Fonctionnalités
 
 ### Gameplay
-- Interface graphique fluide avec SDL2 et effets visuels modernes
+- Interface graphique fluide avec SDL3 et effets visuels modernes
 - Contrôles au clavier (flèches directionnelles et WASD)
 - Système de score avancé avec bonus de longueur
 - Gestion des collisions précise
@@ -69,7 +69,7 @@ Ce projet implémente le jeu classique Snake en utilisant le langage C et la bib
 Avant de compiler et exécuter le jeu, assurez-vous d'avoir installé :
 
 - GCC (compilateur C)
-- SDL2 et ses bibliothèques de développement
+- SDL3 et ses bibliothèques de développement
 - Make (optionnel, pour utiliser le Makefile)
 
 ### Installation des dépendances sur Ubuntu/Debian
@@ -82,7 +82,7 @@ sudo apt install gcc libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer
 ### Installation des dépendances sur Fedora
 
 ```bash
-sudo dnf install gcc SDL2-devel SDL2_image-devel SDL2_ttf-devel SDL2_mixer-devel
+sudo dnf install gcc SDL3-devel SDL3_image-devel SDL3_ttf-devel SDL3_mixer-devel
 ```
 
 ### Installation des dépendances sur Arch Linux
@@ -102,7 +102,7 @@ make
 ### Compilation manuelle
 
 ```bash
-gcc -o snake *.c -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer
+gcc -o snake *.c -lSDL3 -lSDL3_image -lSDL3_ttf -lSDL3_mixer
 ```
 
 ## Exécution
@@ -130,7 +130,7 @@ gcc -o snake *.c -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer
 ## Structure du projet
 
 ```
-Snake_SDL2/
+Snake_SDL3/
 ├── src/            # Code source
 │   ├── game.h      # Définitions et structures principales
 │   ├── game.c      # Logique principale du jeu
@@ -172,9 +172,9 @@ Ce projet est sous licence libre. Voir le fichier `LICENSE` pour plus de détail
 
 ## Remerciements
 
-- La communauté SDL2 pour la documentation excellente
+- La communauté SDL3 pour la documentation excellente
 - Les contributeurs et testeurs du projet
 
 ---
 
-*Développé avec ❤️ en C et SDL2*
+*Développé avec ❤️ en C et SDL3*

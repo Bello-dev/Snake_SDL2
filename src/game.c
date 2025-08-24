@@ -7,7 +7,7 @@
 
 bool game_init(Game* game) {
     // Create window
-    game->window = SDL_CreateWindow("Snake SDL2 - Enhanced Edition", 
+    game->window = SDL_CreateWindow("Snake SDL3 - Enhanced Edition", 
                                    SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
                                    SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
     if (!game->window) {

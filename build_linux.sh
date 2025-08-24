@@ -1,7 +1,7 @@
 #!/bin/bash
-# Linux build script for Snake SDL2
+# Linux build script for Snake SDL3
 
-echo "Building Snake SDL2 for Linux..."
+echo "Building Snake SDL3 for Linux..."
 
 # Check if CMake is available
 if ! command -v cmake &> /dev/null; then
@@ -10,14 +10,22 @@ if ! command -v cmake &> /dev/null; then
     exit 1
 fi
 
-# Check if SDL2 development libraries are installed
-if ! pkg-config --exists sdl2; then
-    echo "Error: SDL2 development libraries not found"
-    echo "Install with:"
-    echo "  Ubuntu/Debian: sudo apt install libsdl2-dev libsdl2-ttf-dev libsdl2-mixer-dev"
-    echo "  Fedora: sudo dnf install SDL2-devel SDL2_ttf-devel SDL2_mixer-devel"
-    echo "  Arch: sudo pacman -S sdl2 sdl2_ttf sdl2_mixer"
-    exit 1
+# Check if SDL3 development libraries are installed, fallback to SDL2
+if ! pkg-config --exists sdl3; then
+    echo "Warning: SDL3 development libraries not found, trying SDL2 as fallback"
+    if ! pkg-config --exists sdl2; then
+        echo "Error: Neither SDL3 nor SDL2 development libraries found"
+        echo "Install with:"
+        echo "  For SDL3 (preferred): sudo apt install libsdl3-dev libsdl3-ttf-dev libsdl3-mixer-dev"
+        echo "  For SDL2 (fallback): sudo apt install libsdl2-dev libsdl2-ttf-dev libsdl2-mixer-dev"
+        echo "  Fedora: sudo dnf install SDL3-devel SDL3_ttf-devel SDL3_mixer-devel"
+        echo "  Arch: sudo pacman -S sdl3 sdl3_ttf sdl3_mixer"
+        exit 1
+    else
+        echo "✅ Using SDL2 as fallback (SDL3 preferred but not available)"
+    fi
+else
+    echo "✅ SDL3 development libraries found"
 fi
 
 # Create build directory

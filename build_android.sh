@@ -1,10 +1,10 @@
 #!/bin/bash
-# Android build script for Snake SDL2
-# Requirements: Android SDK, NDK, SDL2 source code
+# Android build script for Snake SDL3
+# Requirements: Android SDK, NDK, SDL3 source code
 
 set -e
 
-echo "🐍 Building Snake SDL2 for Android 🐍"
+echo "🐍 Building Snake SDL3 for Android 🐍"
 echo "===================================="
 echo
 
@@ -43,22 +43,22 @@ fi
 
 echo "✅ ANDROID_NDK_HOME: $ANDROID_NDK_HOME"
 
-# Check for SDL2 source
-SDL2_PATH="$ANDROID_DIR/app/jni/SDL2"
-if [ ! -d "$SDL2_PATH" ]; then
-    echo "❌ SDL2 source not found at $SDL2_PATH"
+# Check for SDL3 source
+SDL3_PATH="$ANDROID_DIR/app/jni/SDL3"
+if [ ! -d "$SDL3_PATH" ]; then
+    echo "❌ SDL3 source not found at $SDL3_PATH"
     echo ""
     echo "To fix this:"
-    echo "1. Download SDL2 source with Android support from https://www.libsdl.org/download-2.0.php"
-    echo "2. Extract to $SDL2_PATH"
+    echo "1. Download SDL3 source with Android support from https://www.libsdl.org/download-3.0.php"
+    echo "2. Extract to $SDL3_PATH"
     echo "3. Ensure the following files exist:"
-    echo "   - $SDL2_PATH/Android.mk"
-    echo "   - $SDL2_PATH/include/SDL.h"
+    echo "   - $SDL3_PATH/Android.mk"
+    echo "   - $SDL3_PATH/include/SDL.h"
     echo ""
     exit 1
 fi
 
-echo "✅ SDL2 source found"
+echo "✅ SDL3 source found"
 
 # Check for gradlew
 if [ ! -f "$ANDROID_DIR/gradlew" ]; then
