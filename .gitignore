@@ -1,0 +1,34 @@
+# Build artifacts
+obj/
+data/snake_revolutionary
+*.o
+*.so
+*.a
+
+# Game data files
+highscore.dat
+achievements.dat  
+game_stats.dat
+
+# IDE and editor files
+.vscode/
+.clangd
+*.swp
+*.swo
+*~
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.log
+
+# Backup files
+*.bak
+*.old
+*_backup
+
+# Test files
+test_*

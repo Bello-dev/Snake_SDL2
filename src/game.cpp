@@ -1,4 +1,5 @@
 #include "game.h"
+#include "achievements.h"
 #include <string>
 #include <fstream>
 #include <algorithm>
@@ -231,12 +232,18 @@ Game::Game() : window(nullptr), renderer(nullptr), font(nullptr), large_font(nul
                foods_eaten(0), special_foods_eaten(0), game_start_time(0),
                last_move_time(0), move_delay(200), base_move_delay(200),
                food_pulse(0), game_over_alpha(0), screen_shake_intensity(0),
-               screen_shake_end_time(0) {
+               screen_shake_end_time(0), game_stats(nullptr), achievement_system(nullptr) {
     srand(static_cast<unsigned int>(time(nullptr)));
+    
+    // Initialize achievement system
+    game_stats = new GameStats();
+    achievement_system = new AchievementSystem();
 }
 
 Game::~Game() {
     cleanup();
+    delete game_stats;
+    delete achievement_system;
 }
 
 bool Game::init() {
@@ -548,6 +555,16 @@ void Game::update() {
                 high_score = score;
                 save_high_score();
             }
+            
+            // Update game statistics and check achievements
+            Uint32 game_duration = SDL_GetTicks() - game_start_time;
+            game_stats->update_game_end(score, level, snake.get_length(),
+                                     foods_eaten, special_foods_eaten,
+                                     power_ups.combo_multiplier, game_duration);
+            
+            auto new_achievements = achievement_system->update(*game_stats);
+            // TODO: Display achievement notifications
+            
             if (sound_effects[21]) {
                 Mix_PlayChannel(-1, sound_effects[21], 0);
             }
@@ -840,11 +857,25 @@ void Game::render_game_over() {
     std::string length_text = "Snake Length: " + std::to_string(snake.get_length());
     render_text(length_text, SCREEN_WIDTH/2 - 80, SCREEN_HEIGHT/2 + 10, {255, 255, 255, 255});
     
+    // Statistics display
+    std::string games_text = "Games Played: " + std::to_string(game_stats->games_played);
+    render_text(games_text, SCREEN_WIDTH/2 - 80, SCREEN_HEIGHT/2 + 40, {200, 200, 200, 255});
+    
+    Uint32 game_time = (SDL_GetTicks() - game_start_time) / 1000;
+    std::string game_time_text = "Game Time: " + std::to_string(game_time) + "s";
+    render_text(game_time_text, SCREEN_WIDTH/2 - 80, SCREEN_HEIGHT/2 + 70, {200, 200, 200, 255});
+    
+    // Achievement progress
+    int unlocked_count = achievement_system->get_unlocked_count();
+    int total_count = achievement_system->get_total_count();
+    std::string achievement_text = "Achievements: " + std::to_string(unlocked_count) + "/" + std::to_string(total_count);
+    render_text(achievement_text, SCREEN_WIDTH/2 - 90, SCREEN_HEIGHT/2 + 130, {255, 215, 0, 255});
+    
     if (score == high_score && score > 0) {
-        render_text("NEW HIGH SCORE!", SCREEN_WIDTH/2 - 100, SCREEN_HEIGHT/2 + 50, {255, 255, 0, 255});
+        render_text("NEW HIGH SCORE!", SCREEN_WIDTH/2 - 100, SCREEN_HEIGHT/2 + 160, {255, 255, 0, 255});
     }
     
-    render_text("Press SPACE to return to menu", SCREEN_WIDTH/2 - 130, SCREEN_HEIGHT/2 + 100, {200, 200, 200, 255});
+    render_text("Press SPACE to return to menu", SCREEN_WIDTH/2 - 130, SCREEN_HEIGHT/2 + 190, {200, 200, 200, 255});
 }
 
 void Game::render_snake() {

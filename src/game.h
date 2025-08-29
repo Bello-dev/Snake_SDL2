@@ -15,6 +15,10 @@
 #include <vector>
 #include <memory>
 
+// Forward declarations
+struct GameStats;
+class AchievementSystem;
+
 // Configuration constants
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
@@ -158,6 +162,10 @@ private:
     Food food;
     PowerUps power_ups;
     std::vector<Particle> particles;
+    
+    // Achievement system
+    GameStats* game_stats;
+    AchievementSystem* achievement_system;
     
     // Game state
     GameState state;
