@@ -193,6 +193,11 @@ private:
     float screen_shake_intensity;
     Uint32 screen_shake_end_time;
     
+    // Enhanced loading screen effects
+    float loading_progress;
+    Uint32 loading_start_time;
+    std::vector<Particle> loading_particles;
+    
 public:
     Game();
     ~Game();
@@ -230,6 +235,29 @@ public:
     void render_power_up_indicators();
     void render_text(const std::string& text, int x, int y, SDL_Color color, TTF_Font* font_to_use = nullptr);
     void render_gradient_background();
+    
+    // Enhanced loading screen methods
+    void render_futuristic_background(float progress);
+    void render_animated_logo(float progress);
+    void render_animated_subtitle(float progress);
+    void render_loading_progress(float progress);
+    void update_loading_particles(float progress);
+    void render_loading_particles();
+    
+    // Enhanced menu methods
+    void render_futuristic_menu_background();
+    void render_holographic_title();
+    void render_modern_difficulty_selection();
+    void render_interactive_food_showcase();
+    void render_info_panel();
+    void render_futuristic_controls();
+    
+    // Enhanced snake rendering
+    void render_futuristic_snake_head(SDL_Rect rect, float time);
+    void render_futuristic_snake_body(SDL_Rect rect, size_t segment_index, float time);
+    void render_snake_eyes(SDL_Rect head_rect, Direction direction, float time);
+    void render_speed_indicators(SDL_Rect head_rect, float time);
+    void render_snake_joint(size_t segment_index);
     
     // Particle system
     void add_particle(float x, float y, float vx, float vy, SDL_Color color);

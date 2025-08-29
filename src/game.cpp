@@ -232,7 +232,8 @@ Game::Game() : window(nullptr), renderer(nullptr), font(nullptr), large_font(nul
                foods_eaten(0), special_foods_eaten(0), game_start_time(0),
                last_move_time(0), move_delay(200), base_move_delay(200),
                food_pulse(0), game_over_alpha(0), screen_shake_intensity(0),
-               screen_shake_end_time(0), game_stats(nullptr), achievement_system(nullptr) {
+               screen_shake_end_time(0), loading_progress(0), loading_start_time(0),
+               game_stats(nullptr), achievement_system(nullptr) {
     srand(static_cast<unsigned int>(time(nullptr)));
     
     // Initialize achievement system
@@ -422,9 +423,25 @@ void Game::cleanup() {
 }
 
 void Game::run() {
-    // Show loading screen first
-    render_loading_screen();
-    SDL_Delay(2000); // Show "BELLO DEV" for 2 seconds
+    // Initialize loading animation
+    loading_start_time = SDL_GetTicks();
+    loading_particles.clear();
+    
+    // Show loading screen with animation for 3 seconds
+    Uint32 loading_duration = 3000;
+    while (SDL_GetTicks() - loading_start_time < loading_duration) {
+        // Handle quit events during loading
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_QUIT) {
+                running = false;
+                return;
+            }
+        }
+        
+        render_loading_screen();
+        SDL_Delay(16); // ~60 FPS
+    }
     
     if (background_music) {
         Mix_PlayMusic(background_music, -1);
@@ -748,73 +765,225 @@ void Game::render() {
 }
 
 void Game::render_loading_screen() {
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-    SDL_RenderClear(renderer);
+    // Calculate animation progress (0.0 to 1.0 over 3 seconds)
+    float elapsed = (SDL_GetTicks() - loading_start_time) / 3000.0f;
+    elapsed = std::min(elapsed, 1.0f);
     
-    if (loading_texture) {
-        SDL_Rect dest = {0, 0, SCREEN_WIDTH + 200, SCREEN_HEIGHT};
-        SDL_RenderCopy(renderer, loading_texture, nullptr, &dest);
-    } else {
-        // Fallback text rendering for BELLO DEV
-        render_text("BELLO DEV", SCREEN_WIDTH/2 - 80, SCREEN_HEIGHT/2 - 30, {255, 255, 255, 255}, large_font);
-        render_text("Snake Game - Revolutionary Edition", SCREEN_WIDTH/2 - 160, SCREEN_HEIGHT/2 + 20, {200, 200, 200, 255});
-    }
+    // Dynamic gradient background
+    render_futuristic_background(elapsed);
+    
+    // Update and render loading particles
+    update_loading_particles(elapsed);
+    render_loading_particles();
+    
+    // BELLO DEV logo with spectacular effects
+    render_animated_logo(elapsed);
+    
+    // Subtitle with typewriter effect
+    render_animated_subtitle(elapsed);
+    
+    // Progress bar
+    render_loading_progress(elapsed);
     
     SDL_RenderPresent(renderer);
 }
 
-void Game::render_menu() {
-    render_gradient_background();
+void Game::render_futuristic_background(float progress) {
+    // Dynamic gradient from dark blue to purple to pink
+    for (int y = 0; y < SCREEN_HEIGHT; y++) {
+        float gradient = (float)y / SCREEN_HEIGHT;
+        
+        // Color transitions based on progress
+        Uint8 r = static_cast<Uint8>(10 + (100 * progress) + (50 * sin(progress * 6.28f)) + gradient * 30);
+        Uint8 g = static_cast<Uint8>(5 + (50 * progress) + gradient * 50);
+        Uint8 b = static_cast<Uint8>(30 + (120 * progress) + (80 * sin(progress * 3.14f)) + gradient * 100);
+        
+        SDL_SetRenderDrawColor(renderer, r, g, b, 255);
+        SDL_Rect line = {0, y, SCREEN_WIDTH + 200, 1};
+        SDL_RenderFillRect(renderer, &line);
+    }
     
-    // Animated title with glow effect
-    float time = SDL_GetTicks() / 1000.0f;
-    float title_glow = 0.8f + 0.2f * sinf(time * 2);
+    // Add moving stars/sparkles
+    int star_count = static_cast<int>(30 * progress);
+    for (int i = 0; i < star_count; i++) {
+        float star_time = progress * 2.0f + i * 0.1f;
+        int x = static_cast<int>((50 + i * 13) % (SCREEN_WIDTH + 200)) + static_cast<int>(sin(star_time) * 20);
+        int y = static_cast<int>((30 + i * 17) % SCREEN_HEIGHT) + static_cast<int>(cos(star_time * 1.5f) * 10);
+        
+        float alpha = sin(star_time * 3) * 0.5f + 0.5f;
+        Uint8 star_alpha = static_cast<Uint8>(255 * alpha * progress);
+        
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, star_alpha);
+        SDL_Rect star = {x-1, y-1, 3, 3};
+        SDL_RenderFillRect(renderer, &star);
+    }
+}
+
+void Game::render_animated_logo(float progress) {
+    if (progress < 0.2f) return; // Delay logo appearance
     
-    SDL_Color title_color = {
-        static_cast<Uint8>(255 * title_glow),
-        static_cast<Uint8>(200 * title_glow),
-        static_cast<Uint8>(100 * title_glow),
-        255
+    float logo_progress = (progress - 0.2f) / 0.6f; // Logo animation from 0.2 to 0.8
+    logo_progress = std::min(logo_progress, 1.0f);
+    
+    // Letter-by-letter reveal with glow
+    std::string logo = "BELLO DEV";
+    int base_x = SCREEN_WIDTH/2 - 100;
+    int base_y = SCREEN_HEIGHT/2 - 50;
+    
+    for (size_t i = 0; i < logo.length(); i++) {
+        float letter_progress = logo_progress * 9 - i; // Each letter appears slightly delayed
+        if (letter_progress <= 0) continue;
+        letter_progress = std::min(letter_progress, 1.0f);
+        
+        // Letter position with smooth animation
+        int x = base_x + i * 20;
+        int y = base_y + static_cast<int>(sin(letter_progress * 3.14f) * -30 * (1 - letter_progress));
+        
+        // Color with glow effect
+        float glow_intensity = 0.7f + 0.3f * sin(SDL_GetTicks() / 200.0f + i);
+        Uint8 r = static_cast<Uint8>(255 * glow_intensity * letter_progress);
+        Uint8 g = static_cast<Uint8>(150 + 105 * glow_intensity * letter_progress);
+        Uint8 b = static_cast<Uint8>(50 + 205 * glow_intensity * letter_progress);
+        Uint8 a = static_cast<Uint8>(255 * letter_progress);
+        
+        // Multiple renders for glow effect
+        for (int glow = 2; glow >= 0; glow--) {
+            SDL_Color color = {r, g, b, static_cast<Uint8>(a / (glow + 1))};
+            std::string letter(1, logo[i]);
+            if (logo[i] != ' ') {
+                render_text(letter, x - glow, y - glow, color, large_font);
+                render_text(letter, x + glow, y + glow, color, large_font);
+            }
+        }
+        
+        SDL_Color final_color = {r, g, b, a};
+        std::string letter(1, logo[i]);
+        if (logo[i] != ' ') {
+            render_text(letter, x, y, final_color, large_font);
+        }
+    }
+}
+
+void Game::render_animated_subtitle(float progress) {
+    if (progress < 0.6f) return;
+    
+    float subtitle_progress = (progress - 0.6f) / 0.4f;
+    subtitle_progress = std::min(subtitle_progress, 1.0f);
+    
+    std::string subtitle = "Revolutionary Snake Experience";
+    int visible_chars = static_cast<int>(subtitle.length() * subtitle_progress);
+    
+    std::string visible_subtitle = subtitle.substr(0, visible_chars);
+    
+    // Typewriter effect with cursor
+    SDL_Color subtitle_color = {
+        200, 
+        static_cast<Uint8>(200 + 55 * sin(SDL_GetTicks() / 300.0f)), 
+        255, 
+        static_cast<Uint8>(255 * subtitle_progress)
     };
     
-    render_text("SNAKE SDL2", SCREEN_WIDTH/2 - 120, SCREEN_HEIGHT/2 - 120, title_color, large_font);
+    render_text(visible_subtitle, SCREEN_WIDTH/2 - 140, SCREEN_HEIGHT/2 + 10, subtitle_color);
     
-    // Enhanced subtitle with color cycling
-    Uint8 subtitle_r = 150 + (Uint8)(50 * sinf(time));
-    Uint8 subtitle_g = 200 + (Uint8)(55 * sinf(time + 2));
-    Uint8 subtitle_b = 255;
-    render_text("Revolutionary Edition with Magic Powers!", SCREEN_WIDTH/2 - 180, SCREEN_HEIGHT/2 - 70, {subtitle_r, subtitle_g, subtitle_b, 255});
+    // Blinking cursor
+    if (subtitle_progress < 1.0f && (SDL_GetTicks() / 500) % 2 == 0) {
+        render_text("_", SCREEN_WIDTH/2 - 140 + visible_chars * 10, SCREEN_HEIGHT/2 + 10, subtitle_color);
+    }
+}
+
+void Game::render_loading_progress(float progress) {
+    if (progress < 0.3f) return;
     
-    // Feature highlights
-    render_text("✦ 7 Magic Food Types ✦ Power-Up System ✦", SCREEN_WIDTH/2 - 150, SCREEN_WIDTH/2 - 45, {255, 200, 150, 255});
-    render_text("✦ Combo System ✦ Spectacular Visual Effects ✦", SCREEN_WIDTH/2 - 170, SCREEN_HEIGHT/2 - 25, {200, 255, 200, 255});
+    float bar_progress = (progress - 0.3f) / 0.7f;
+    bar_progress = std::min(bar_progress, 1.0f);
     
-    // Difficulty selection
-    render_text("Select Difficulty:", SCREEN_WIDTH/2 - 80, SCREEN_HEIGHT/2 + 20, {255, 255, 255, 255});
+    int bar_width = 300;
+    int bar_height = 8;
+    int bar_x = SCREEN_WIDTH/2 - bar_width/2;
+    int bar_y = SCREEN_HEIGHT/2 + 80;
     
-    SDL_Color easy_color = (difficulty == DIFFICULTY_EASY) ? SDL_Color{255, 255, 0, 255} : SDL_Color{150, 150, 150, 255};
-    SDL_Color normal_color = (difficulty == DIFFICULTY_NORMAL) ? SDL_Color{255, 255, 0, 255} : SDL_Color{150, 150, 150, 255};
-    SDL_Color hard_color = (difficulty == DIFFICULTY_HARD) ? SDL_Color{255, 255, 0, 255} : SDL_Color{150, 150, 150, 255};
+    // Background bar
+    SDL_SetRenderDrawColor(renderer, 40, 40, 60, 200);
+    SDL_Rect bg_bar = {bar_x - 2, bar_y - 2, bar_width + 4, bar_height + 4};
+    SDL_RenderFillRect(renderer, &bg_bar);
     
-    render_text("1. Easy", SCREEN_WIDTH/2 - 100, SCREEN_HEIGHT/2 + 50, easy_color);
-    render_text("2. Normal", SCREEN_WIDTH/2 - 30, SCREEN_HEIGHT/2 + 50, normal_color);
-    render_text("3. Hard", SCREEN_WIDTH/2 + 50, SCREEN_HEIGHT/2 + 50, hard_color);
+    // Progress bar with gradient
+    int fill_width = static_cast<int>(bar_width * bar_progress);
+    for (int i = 0; i < fill_width; i++) {
+        float gradient = (float)i / bar_width;
+        Uint8 r = static_cast<Uint8>(100 + 155 * gradient);
+        Uint8 g = static_cast<Uint8>(200 - 100 * gradient);
+        Uint8 b = static_cast<Uint8>(255 - 155 * gradient);
+        
+        SDL_SetRenderDrawColor(renderer, r, g, b, 255);
+        SDL_Rect fill = {bar_x + i, bar_y, 1, bar_height};
+        SDL_RenderFillRect(renderer, &fill);
+    }
     
-    render_text("Press SPACE to start!", SCREEN_WIDTH/2 - 80, SCREEN_HEIGHT/2 + 100, {255, 255, 255, 255});
+    // Loading text
+    std::string loading_text = "Loading Revolutionary Experience... " + 
+                              std::to_string(static_cast<int>(bar_progress * 100)) + "%";
+    SDL_Color text_color = {200, 200, 255, static_cast<Uint8>(255 * bar_progress)};
+    render_text(loading_text, SCREEN_WIDTH/2 - 150, SCREEN_HEIGHT/2 + 100, text_color);
+}
+
+void Game::update_loading_particles(float progress) {
+    // Add new particles based on progress
+    if (loading_particles.size() < static_cast<size_t>(50 * progress)) {
+        Particle p;
+        p.x = static_cast<float>(rand() % (SCREEN_WIDTH + 200));
+        p.y = static_cast<float>(SCREEN_HEIGHT + 10);
+        p.vx = (static_cast<float>(rand()) / RAND_MAX - 0.5f) * 2;
+        p.vy = -static_cast<float>(rand() % 3 + 1);
+        p.life = p.max_life = 3.0f + static_cast<float>(rand() % 3);
+        p.r = 100 + rand() % 156;
+        p.g = 150 + rand() % 106;
+        p.b = 200 + rand() % 56;
+        p.a = 255;
+        loading_particles.push_back(p);
+    }
     
-    // High score display
-    std::string high_score_text = "High Score: " + std::to_string(high_score);
-    render_text(high_score_text, SCREEN_WIDTH/2 - 60, SCREEN_HEIGHT/2 + 130, {200, 200, 200, 255});
+    // Update existing particles
+    for (auto it = loading_particles.begin(); it != loading_particles.end();) {
+        it->update(0.016f); // Assuming ~60fps
+        if (!it->is_alive()) {
+            it = loading_particles.erase(it);
+        } else {
+            ++it;
+        }
+    }
+}
+
+void Game::render_loading_particles() {
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    for (const auto& p : loading_particles) {
+        SDL_SetRenderDrawColor(renderer, p.r, p.g, p.b, p.a);
+        SDL_Rect particle_rect = {
+            static_cast<int>(p.x) - 1, 
+            static_cast<int>(p.y) - 1, 
+            3, 3
+        };
+        SDL_RenderFillRect(renderer, &particle_rect);
+    }
+}
+
+void Game::render_menu() {
+    render_futuristic_menu_background();
     
-    // Food legend
-    render_text("Food Types:", SCREEN_WIDTH + 20, 50, {255, 255, 255, 255});
-    render_text("Green: Normal (+10)", SCREEN_WIDTH + 20, 80, {0, 255, 0, 255});
-    render_text("Yellow: Speed Boost", SCREEN_WIDTH + 20, 100, {255, 255, 0, 255});
-    render_text("Cyan: Double Score", SCREEN_WIDTH + 20, 120, {0, 255, 255, 255});
-    render_text("Gold: High Bonus", SCREEN_WIDTH + 20, 140, {255, 215, 0, 255});
-    render_text("Magenta: Shrink", SCREEN_WIDTH + 20, 160, {255, 0, 255, 255});
-    render_text("Purple: Phase Mode", SCREEN_WIDTH + 20, 180, {128, 0, 255, 255});
-    render_text("Red: MEGA Bonus", SCREEN_WIDTH + 20, 200, {255, 100, 100, 255});
+    // Spectacular animated title
+    render_holographic_title();
+    
+    // Interactive difficulty selection with modern UI
+    render_modern_difficulty_selection();
+    
+    // Advanced food showcase
+    render_interactive_food_showcase();
+    
+    // Professional stats and info panel
+    render_info_panel();
+    
+    // Futuristic controls hint
+    render_futuristic_controls();
 }
 
 void Game::render_game() {
@@ -879,39 +1048,22 @@ void Game::render_game_over() {
 }
 
 void Game::render_snake() {
+    float time = SDL_GetTicks() / 1000.0f;
+    
     for (size_t i = 0; i < snake.segments.size(); i++) {
         const Segment& seg = snake.segments[i];
         SDL_Rect rect = {seg.x * GRID_SIZE, seg.y * GRID_SIZE, GRID_SIZE, GRID_SIZE};
         
-        if (i == 0) { // Head
-            // Head with special effects based on active powers
-            SDL_Color head_color = {100, 255, 100, 255};
-            if (power_ups.is_speed_active()) {
-                head_color = {255, 255, 100, 255}; // Yellow for speed
-            } else if (power_ups.is_phase_active()) {
-                head_color = {200, 100, 255, 255}; // Purple for phase
-            }
-            
-            SDL_SetRenderDrawColor(renderer, head_color.r, head_color.g, head_color.b, head_color.a);
-            SDL_RenderFillRect(renderer, &rect);
-            
-            // Eyes
-            SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-            SDL_Rect eye1 = {rect.x + 2, rect.y + 2, 4, 4};
-            SDL_Rect eye2 = {rect.x + GRID_SIZE - 6, rect.y + 2, 4, 4};
-            SDL_RenderFillRect(renderer, &eye1);
-            SDL_RenderFillRect(renderer, &eye2);
+        if (i == 0) { // Head - completely redesigned
+            render_futuristic_snake_head(rect, time);
         } else {
-            // Body with gradient effect
-            float body_ratio = static_cast<float>(i) / snake.segments.size();
-            Uint8 green_intensity = static_cast<Uint8>(255 * (1.0f - body_ratio * 0.5f));
-            SDL_SetRenderDrawColor(renderer, 50, green_intensity, 50, 255);
-            SDL_RenderFillRect(renderer, &rect);
+            render_futuristic_snake_body(rect, i, time);
         }
         
-        // Border
-        SDL_SetRenderDrawColor(renderer, 0, 100, 0, 255);
-        SDL_RenderDrawRect(renderer, &rect);
+        // Add connection joints between segments for smoother appearance
+        if (i > 0) {
+            render_snake_joint(i);
+        }
     }
 }
 
@@ -1128,4 +1280,435 @@ void Game::load_high_score() {
         file >> high_score;
         file.close();
     }
+}
+
+// Enhanced menu rendering functions
+void Game::render_futuristic_menu_background() {
+    float time = SDL_GetTicks() / 1000.0f;
+    
+    // Dynamic layered background
+    for (int y = 0; y < SCREEN_HEIGHT; y++) {
+        float gradient = (float)y / SCREEN_HEIGHT;
+        float wave = sin(time + gradient * 6.28f) * 0.1f;
+        
+        Uint8 r = static_cast<Uint8>(5 + (25 * gradient) + (15 * wave));
+        Uint8 g = static_cast<Uint8>(10 + (40 * gradient) + (20 * sin(time * 0.7f + gradient * 3.14f)));
+        Uint8 b = static_cast<Uint8>(40 + (100 * gradient) + (30 * wave));
+        
+        SDL_SetRenderDrawColor(renderer, r, g, b, 255);
+        SDL_Rect line = {0, y, SCREEN_WIDTH + 200, 1};
+        SDL_RenderFillRect(renderer, &line);
+    }
+    
+    // Animated grid pattern
+    SDL_SetRenderDrawColor(renderer, 30, 50, 80, 100);
+    for (int x = 0; x < SCREEN_WIDTH + 200; x += 40) {
+        for (int y = 0; y < SCREEN_HEIGHT; y += 40) {
+            float alpha_mod = sin(time + x * 0.01f + y * 0.01f) * 0.5f + 0.5f;
+            if (alpha_mod > 0.7f) {
+                SDL_Rect dot = {x + static_cast<int>(sin(time + x) * 2), 
+                               y + static_cast<int>(cos(time + y) * 2), 2, 2};
+                SDL_RenderFillRect(renderer, &dot);
+            }
+        }
+    }
+    
+    // Floating energy orbs
+    for (int i = 0; i < 8; i++) {
+        float orb_time = time + i * 0.8f;
+        int x = static_cast<int>(100 + (SCREEN_WIDTH - 200) * (sin(orb_time * 0.3f) + 1) / 2);
+        int y = static_cast<int>(50 + (SCREEN_HEIGHT - 100) * (cos(orb_time * 0.2f) + 1) / 2);
+        
+        float glow = sin(orb_time * 2) * 0.3f + 0.7f;
+        Uint8 alpha = static_cast<Uint8>(80 * glow);
+        
+        // Render orb with glow effect
+        for (int radius = 8; radius > 0; radius -= 2) {
+            SDL_SetRenderDrawColor(renderer, 
+                                 100 + radius * 15, 
+                                 150 + radius * 10, 
+                                 255, 
+                                 alpha / (radius / 2 + 1));
+            for (int dx = -radius; dx <= radius; dx++) {
+                for (int dy = -radius; dy <= radius; dy++) {
+                    if (dx*dx + dy*dy <= radius*radius) {
+                        SDL_Rect pixel = {x + dx, y + dy, 1, 1};
+                        SDL_RenderFillRect(renderer, &pixel);
+                    }
+                }
+            }
+        }
+    }
+}
+
+void Game::render_holographic_title() {
+    float time = SDL_GetTicks() / 1000.0f;
+    
+    // Main title with holographic effect
+    std::string title = "SNAKE REVOLUTION";
+    int title_y = 80;
+    
+    for (size_t i = 0; i < title.length(); i++) {
+        if (title[i] == ' ') continue;
+        
+        float letter_offset = sin(time * 3 + i * 0.3f) * 5;
+        float glow_intensity = 0.8f + 0.2f * sin(time * 4 + i * 0.5f);
+        
+        int x = SCREEN_WIDTH/2 - 140 + i * 20;
+        int y = title_y + static_cast<int>(letter_offset);
+        
+        // Multiple colored layers for holographic effect
+        SDL_Color layers[] = {
+            {static_cast<Uint8>(255 * glow_intensity), static_cast<Uint8>(100 * glow_intensity), static_cast<Uint8>(255 * glow_intensity), 255},
+            {static_cast<Uint8>(100 * glow_intensity), static_cast<Uint8>(255 * glow_intensity), static_cast<Uint8>(255 * glow_intensity), 255},
+            {static_cast<Uint8>(255 * glow_intensity), static_cast<Uint8>(255 * glow_intensity), static_cast<Uint8>(100 * glow_intensity), 255}
+        };
+        
+        std::string letter(1, title[i]);
+        
+        // Render multiple layers for depth effect
+        for (int layer = 0; layer < 3; layer++) {
+            render_text(letter, x + layer - 1, y + layer - 1, layers[layer], large_font);
+        }
+    }
+    
+    // Subtitle with typewriter effect
+    float subtitle_progress = fmod(time * 0.5f, 2.0f);
+    if (subtitle_progress > 1.0f) subtitle_progress = 2.0f - subtitle_progress;
+    
+    std::string subtitle = "» FUTURE GAMING EXPERIENCE «";
+    int visible_chars = static_cast<int>(subtitle.length() * subtitle_progress);
+    std::string visible_subtitle = subtitle.substr(0, visible_chars);
+    
+    SDL_Color subtitle_color = {
+        static_cast<Uint8>(std::min(255, 150 + static_cast<int>(105 * sin(time * 2)))),
+        static_cast<Uint8>(std::min(255, 200 + static_cast<int>(55 * sin(time * 1.5f)))),
+        255,
+        255
+    };
+    
+    render_text(visible_subtitle, SCREEN_WIDTH/2 - 140, 130, subtitle_color);
+}
+
+void Game::render_modern_difficulty_selection() {
+    float time = SDL_GetTicks() / 1000.0f;
+    int base_y = 200;
+    
+    // Section title
+    render_text("◢ DIFFICULTY MATRIX ◣", SCREEN_WIDTH/2 - 90, base_y, {200, 255, 200, 255});
+    
+    const char* difficulty_names[] = {"APPRENTICE", "WARRIOR", "LEGEND"};
+    const char* difficulty_keys[] = {"[1]", "[2]", "[3]"};
+    const char* difficulty_desc[] = {
+        "Perfect for learning", 
+        "Balanced challenge", 
+        "Ultimate test"
+    };
+    
+    for (int i = 0; i < 3; i++) {
+        bool selected = (difficulty == (i + 1));
+        int y = base_y + 40 + i * 35;
+        
+        // Selection box with futuristic styling
+        SDL_Color box_color;
+        if (selected) {
+            float pulse = sin(time * 8) * 0.3f + 0.7f;
+            box_color = {
+                static_cast<Uint8>(100 + 155 * pulse),
+                static_cast<Uint8>(255 * pulse),
+                static_cast<Uint8>(100 + 155 * pulse),
+                200
+            };
+            
+            // Animated border for selected difficulty
+            SDL_Rect border = {SCREEN_WIDTH/2 - 150, y - 5, 300, 25};
+            SDL_SetRenderDrawColor(renderer, box_color.r, box_color.g, box_color.b, 100);
+            SDL_RenderFillRect(renderer, &border);
+            
+            // Side indicators
+            render_text("►", SCREEN_WIDTH/2 - 170, y, box_color);
+            render_text("◄", SCREEN_WIDTH/2 + 160, y, box_color);
+        } else {
+            box_color = {120, 120, 150, 255};
+        }
+        
+        // Difficulty name and key
+        render_text(difficulty_keys[i], SCREEN_WIDTH/2 - 140, y, box_color);
+        render_text(difficulty_names[i], SCREEN_WIDTH/2 - 110, y, box_color);
+        render_text(difficulty_desc[i], SCREEN_WIDTH/2 - 10, y, {150, 150, 170, 255});
+    }
+}
+
+void Game::render_interactive_food_showcase() {
+    float time = SDL_GetTicks() / 1000.0f;
+    int panel_x = SCREEN_WIDTH + 20;
+    int panel_y = 50;
+    
+    // Modern panel header
+    render_text("═══ POWER CORES ═══", panel_x, panel_y, {255, 200, 100, 255});
+    
+    struct FoodInfo {
+        const char* name;
+        const char* effect;
+        SDL_Color color;
+        const char* symbol;
+    };
+    
+    FoodInfo foods[] = {
+        {"BASIC", "Standard Growth", {100, 255, 100, 255}, "●"},
+        {"VELOCITY", "Speed Boost x1.6", {255, 255, 100, 255}, "⚡"},
+        {"AMPLIFY", "Double Score x8s", {100, 255, 255, 255}, "◆"},
+        {"AURUM", "Golden Bonus x3", {255, 215, 0, 255}, "★"},
+        {"COMPACT", "Size Reduction", {255, 100, 255, 255}, "◇"},
+        {"PHANTOM", "Phase Through", {150, 100, 255, 255}, "◈"},
+        {"OMEGA", "Mega Bonus x5", {255, 100, 100, 255}, "⬟"}
+    };
+    
+    for (int i = 0; i < 7; i++) {
+        int y = panel_y + 30 + i * 25;
+        float item_glow = sin(time * 2 + i * 0.5f) * 0.3f + 0.7f;
+        
+        SDL_Color glow_color = foods[i].color;
+        glow_color.r = static_cast<Uint8>(glow_color.r * item_glow);
+        glow_color.g = static_cast<Uint8>(glow_color.g * item_glow);
+        glow_color.b = static_cast<Uint8>(glow_color.b * item_glow);
+        
+        // Animated food symbol
+        render_text(foods[i].symbol, panel_x + 5, y, glow_color);
+        render_text(foods[i].name, panel_x + 25, y, glow_color);
+        render_text(foods[i].effect, panel_x + 25, y + 12, {180, 180, 200, 255});
+    }
+}
+
+void Game::render_info_panel() {
+    int panel_x = SCREEN_WIDTH/2 - 100;
+    int panel_y = 350;
+    
+    // High score with animation
+    float score_glow = sin(SDL_GetTicks() / 300.0f) * 0.2f + 0.8f;
+    std::string high_score_text = "◈ RECORD: " + std::to_string(high_score) + " PTS ◈";
+    SDL_Color score_color = {
+        static_cast<Uint8>(255 * score_glow),
+        static_cast<Uint8>(215 * score_glow),
+        static_cast<Uint8>(0 * score_glow),
+        255
+    };
+    render_text(high_score_text, panel_x, panel_y, score_color);
+    
+    // Achievement info
+    int unlocked = achievement_system->get_unlocked_count();
+    int total = achievement_system->get_total_count();
+    std::string achievement_text = "◇ ACHIEVEMENTS: " + std::to_string(unlocked) + "/" + std::to_string(total) + " ◇";
+    render_text(achievement_text, panel_x - 20, panel_y + 25, {150, 255, 150, 255});
+}
+
+void Game::render_futuristic_controls() {
+    float time = SDL_GetTicks() / 1000.0f;
+    int y = SCREEN_HEIGHT - 80;
+    
+    // Pulsing start instruction
+    float pulse = sin(time * 4) * 0.3f + 0.7f;
+    SDL_Color start_color = {
+        static_cast<Uint8>(255 * pulse),
+        static_cast<Uint8>(255 * pulse),
+        static_cast<Uint8>(100 + 155 * pulse),
+        255
+    };
+    
+    render_text("▶ PRESS [SPACE] TO INITIALIZE ◀", SCREEN_WIDTH/2 - 130, y, start_color);
+    
+    // Controls hint
+    render_text("WASD / Arrow Keys = Navigation | ESC = System Menu", 
+                SCREEN_WIDTH/2 - 180, y + 25, {120, 150, 180, 255});
+    
+    // Version info
+    render_text("v2.0 QUANTUM EDITION - by BELLO DEV", 
+                SCREEN_WIDTH/2 - 120, y + 45, {100, 120, 140, 255});
+}
+
+// Enhanced Snake Rendering System
+void Game::render_futuristic_snake_head(SDL_Rect rect, float time) {
+    // Determine head direction for proper eye positioning
+    Direction head_dir = snake.direction;
+    
+    // Base head colors with power-up modifications
+    SDL_Color head_color = {80, 255, 120, 255}; // Default green
+    SDL_Color glow_color = {40, 200, 80, 180};
+    
+    // Power-up color modifications
+    if (power_ups.is_speed_active()) {
+        head_color = {255, 220, 80, 255}; // Golden yellow
+        glow_color = {255, 200, 0, 180};
+    } else if (power_ups.is_phase_active()) {
+        head_color = {180, 80, 255, 255}; // Purple
+        glow_color = {150, 0, 255, 180};
+    } else if (power_ups.is_double_score_active()) {
+        head_color = {80, 200, 255, 255}; // Cyan
+        glow_color = {0, 150, 255, 180};
+    }
+    
+    // Pulsing effect
+    float pulse = sin(time * 6) * 0.1f + 0.9f;
+    head_color.r = static_cast<Uint8>(head_color.r * pulse);
+    head_color.g = static_cast<Uint8>(head_color.g * pulse);
+    head_color.b = static_cast<Uint8>(head_color.b * pulse);
+    
+    // Multiple layer rendering for depth
+    for (int layer = 3; layer >= 0; layer--) {
+        SDL_Rect layer_rect = {
+            rect.x - layer,
+            rect.y - layer,
+            rect.w + layer * 2,
+            rect.h + layer * 2
+        };
+        
+        if (layer == 0) {
+            // Core head
+            SDL_SetRenderDrawColor(renderer, head_color.r, head_color.g, head_color.b, 255);
+        } else {
+            // Glow layers
+            Uint8 layer_alpha = static_cast<Uint8>(glow_color.a / (layer + 1));
+            SDL_SetRenderDrawColor(renderer, glow_color.r, glow_color.g, glow_color.b, layer_alpha);
+        }
+        
+        SDL_RenderFillRect(renderer, &layer_rect);
+    }
+    
+    // Advanced directional eyes
+    render_snake_eyes(rect, head_dir, time);
+    
+    // Power-up indicators on head
+    if (power_ups.is_speed_active()) {
+        render_speed_indicators(rect, time);
+    }
+    
+    // Head outline
+    SDL_SetRenderDrawColor(renderer, 20, 100, 40, 255);
+    SDL_RenderDrawRect(renderer, &rect);
+}
+
+void Game::render_futuristic_snake_body(SDL_Rect rect, size_t segment_index, float time) {
+    float body_ratio = static_cast<float>(segment_index) / snake.segments.size();
+    float wave_offset = sin(time * 3 + segment_index * 0.5f) * 3;
+    
+    // Adjust position for organic movement
+    rect.x += static_cast<int>(wave_offset);
+    
+    // Gradient coloring from head to tail
+    Uint8 base_green = static_cast<Uint8>(255 * (1.0f - body_ratio * 0.7f));
+    Uint8 base_red = static_cast<Uint8>(50 + body_ratio * 30);
+    Uint8 base_blue = static_cast<Uint8>(80 + body_ratio * 50);
+    
+    // Power-up color influences
+    if (power_ups.is_speed_active()) {
+        base_red = std::min(255, static_cast<int>(base_red * 1.5f));
+        base_green = std::min(255, static_cast<int>(base_green * 1.2f));
+    }
+    
+    if (power_ups.is_phase_active()) {
+        base_blue = std::min(255, static_cast<int>(base_blue * 1.8f));
+        base_red = std::min(255, static_cast<int>(base_red * 1.2f));
+    }
+    
+    // Segmented body rendering
+    SDL_Rect main_body = {rect.x + 1, rect.y + 1, rect.w - 2, rect.h - 2};
+    SDL_SetRenderDrawColor(renderer, base_red, base_green, base_blue, 255);
+    SDL_RenderFillRect(renderer, &main_body);
+    
+    // Scale-like texture
+    for (int y = 0; y < rect.h; y += 4) {
+        for (int x = 0; x < rect.w; x += 4) {
+            if ((x + y) % 8 == 0) {
+                Uint8 scale_intensity = static_cast<Uint8>(base_green * 0.8f);
+                SDL_SetRenderDrawColor(renderer, base_red, scale_intensity, base_blue, 150);
+                SDL_Rect scale = {rect.x + x, rect.y + y, 2, 2};
+                SDL_RenderFillRect(renderer, &scale);
+            }
+        }
+    }
+    
+    // Body outline
+    SDL_SetRenderDrawColor(renderer, 20, static_cast<Uint8>(base_green * 0.6f), 30, 255);
+    SDL_RenderDrawRect(renderer, &rect);
+}
+
+void Game::render_snake_eyes(SDL_Rect head_rect, Direction direction, float time) {
+    int eye_size = 3;
+    float blink = sin(time * 0.3f + 2) > 0.9f ? 0.5f : 1.0f; // Occasional blinking
+    
+    SDL_Rect eye1, eye2;
+    
+    // Position eyes based on direction
+    switch (direction) {
+        case DIR_UP:
+            eye1 = {head_rect.x + 4, head_rect.y + 2, eye_size, static_cast<int>(eye_size * blink)};
+            eye2 = {head_rect.x + head_rect.w - 7, head_rect.y + 2, eye_size, static_cast<int>(eye_size * blink)};
+            break;
+        case DIR_DOWN:
+            eye1 = {head_rect.x + 4, head_rect.y + head_rect.h - 5, eye_size, static_cast<int>(eye_size * blink)};
+            eye2 = {head_rect.x + head_rect.w - 7, head_rect.y + head_rect.h - 5, eye_size, static_cast<int>(eye_size * blink)};
+            break;
+        case DIR_LEFT:
+            eye1 = {head_rect.x + 2, head_rect.y + 4, static_cast<int>(eye_size * blink), eye_size};
+            eye2 = {head_rect.x + 2, head_rect.y + head_rect.h - 7, static_cast<int>(eye_size * blink), eye_size};
+            break;
+        case DIR_RIGHT:
+        default:
+            eye1 = {head_rect.x + head_rect.w - 5, head_rect.y + 4, static_cast<int>(eye_size * blink), eye_size};
+            eye2 = {head_rect.x + head_rect.w - 5, head_rect.y + head_rect.h - 7, static_cast<int>(eye_size * blink), eye_size};
+            break;
+    }
+    
+    // Eye glow
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 200);
+    SDL_RenderFillRect(renderer, &eye1);
+    SDL_RenderFillRect(renderer, &eye2);
+    
+    // Eye pupils
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_Rect pupil1 = {eye1.x + 1, eye1.y + 1, 1, 1};
+    SDL_Rect pupil2 = {eye2.x + 1, eye2.y + 1, 1, 1};
+    SDL_RenderFillRect(renderer, &pupil1);
+    SDL_RenderFillRect(renderer, &pupil2);
+}
+
+void Game::render_speed_indicators(SDL_Rect head_rect, float time) {
+    // Lightning bolts for speed boost
+    float lightning_alpha = sin(time * 10) * 0.5f + 0.5f;
+    SDL_SetRenderDrawColor(renderer, 255, 255, 0, static_cast<Uint8>(255 * lightning_alpha));
+    
+    // Left lightning bolt
+    SDL_Rect bolt1[] = {
+        {head_rect.x - 6, head_rect.y + 2, 2, 4},
+        {head_rect.x - 8, head_rect.y + 6, 2, 4},
+        {head_rect.x - 4, head_rect.y + 10, 2, 4}
+    };
+    
+    // Right lightning bolt
+    SDL_Rect bolt2[] = {
+        {head_rect.x + head_rect.w + 4, head_rect.y + 2, 2, 4},
+        {head_rect.x + head_rect.w + 6, head_rect.y + 6, 2, 4},
+        {head_rect.x + head_rect.w + 2, head_rect.y + 10, 2, 4}
+    };
+    
+    for (int i = 0; i < 3; i++) {
+        SDL_RenderFillRect(renderer, &bolt1[i]);
+        SDL_RenderFillRect(renderer, &bolt2[i]);
+    }
+}
+
+void Game::render_snake_joint(size_t segment_index) {
+    if (segment_index == 0 || segment_index >= snake.segments.size()) return;
+    
+    const Segment& current = snake.segments[segment_index];
+    const Segment& previous = snake.segments[segment_index - 1];
+    
+    // Calculate joint position between segments
+    int joint_x = (current.x + previous.x) * GRID_SIZE / 2;
+    int joint_y = (current.y + previous.y) * GRID_SIZE / 2;
+    
+    // Smooth transition joint
+    SDL_SetRenderDrawColor(renderer, 60, 200, 80, 180);
+    SDL_Rect joint = {joint_x - 2, joint_y - 2, 4, 4};
+    SDL_RenderFillRect(renderer, &joint);
 }
