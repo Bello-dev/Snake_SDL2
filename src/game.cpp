@@ -1005,46 +1005,27 @@ void Game::render_game() {
 }
 
 void Game::render_game_over() {
-    render_gradient_background();
+    float time = SDL_GetTicks() / 1000.0f;
     
-    // Semi-transparent overlay
-    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 180);
-    SDL_Rect overlay = {0, 0, SCREEN_WIDTH + 200, SCREEN_HEIGHT};
-    SDL_RenderFillRect(renderer, &overlay);
+    // Dynamic background with particles
+    render_game_over_background(time);
     
-    // Game Over title
-    render_text("GAME OVER", SCREEN_WIDTH/2 - 80, SCREEN_HEIGHT/2 - 100, {255, 100, 100, 255}, large_font);
+    // Epic title animation
+    render_epic_game_over_title(time);
     
-    // Statistics
-    std::string score_text = "Final Score: " + std::to_string(score);
-    render_text(score_text, SCREEN_WIDTH/2 - 80, SCREEN_HEIGHT/2 - 50, {255, 255, 255, 255});
+    // Professional statistics panel
+    render_game_over_statistics(time);
     
-    std::string level_text = "Level Reached: " + std::to_string(level);
-    render_text(level_text, SCREEN_WIDTH/2 - 80, SCREEN_HEIGHT/2 - 20, {255, 255, 255, 255});
+    // Achievement showcase
+    render_achievement_showcase(time);
     
-    std::string length_text = "Snake Length: " + std::to_string(snake.get_length());
-    render_text(length_text, SCREEN_WIDTH/2 - 80, SCREEN_HEIGHT/2 + 10, {255, 255, 255, 255});
-    
-    // Statistics display
-    std::string games_text = "Games Played: " + std::to_string(game_stats->games_played);
-    render_text(games_text, SCREEN_WIDTH/2 - 80, SCREEN_HEIGHT/2 + 40, {200, 200, 200, 255});
-    
-    Uint32 game_time = (SDL_GetTicks() - game_start_time) / 1000;
-    std::string game_time_text = "Game Time: " + std::to_string(game_time) + "s";
-    render_text(game_time_text, SCREEN_WIDTH/2 - 80, SCREEN_HEIGHT/2 + 70, {200, 200, 200, 255});
-    
-    // Achievement progress
-    int unlocked_count = achievement_system->get_unlocked_count();
-    int total_count = achievement_system->get_total_count();
-    std::string achievement_text = "Achievements: " + std::to_string(unlocked_count) + "/" + std::to_string(total_count);
-    render_text(achievement_text, SCREEN_WIDTH/2 - 90, SCREEN_HEIGHT/2 + 130, {255, 215, 0, 255});
-    
+    // High score celebration
     if (score == high_score && score > 0) {
-        render_text("NEW HIGH SCORE!", SCREEN_WIDTH/2 - 100, SCREEN_HEIGHT/2 + 160, {255, 255, 0, 255});
+        render_high_score_celebration(time);
     }
     
-    render_text("Press SPACE to return to menu", SCREEN_WIDTH/2 - 130, SCREEN_HEIGHT/2 + 190, {200, 200, 200, 255});
+    // Return instruction
+    render_return_instruction(time);
 }
 
 void Game::render_snake() {
@@ -1070,56 +1051,42 @@ void Game::render_snake() {
 void Game::render_food() {
     if (!food.active) return;
     
-    SDL_Rect rect = {food.x * GRID_SIZE, food.y * GRID_SIZE, GRID_SIZE, GRID_SIZE};
+    float time = SDL_GetTicks() / 1000.0f;
+    SDL_Rect base_rect = {food.x * GRID_SIZE, food.y * GRID_SIZE, GRID_SIZE, GRID_SIZE};
     
-    // Pulsing effect
-    float pulse_scale = 1.0f + 0.2f * sinf(food.pulse_phase);
-    int pulse_offset = static_cast<int>((1.0f - pulse_scale) * GRID_SIZE / 2);
-    rect.x += pulse_offset;
-    rect.y += pulse_offset;
-    rect.w = static_cast<int>(GRID_SIZE * pulse_scale);
-    rect.h = static_cast<int>(GRID_SIZE * pulse_scale);
-    
-    SDL_Color color = food.get_color();
-    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
-    SDL_RenderFillRect(renderer, &rect);
-    
-    // Glow effect
-    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, 50);
-    SDL_Rect glow_rect = {rect.x - 2, rect.y - 2, rect.w + 4, rect.h + 4};
-    SDL_RenderFillRect(renderer, &glow_rect);
+    // Enhanced power-core styling based on food type
+    render_power_core_food(base_rect, food.type, time);
 }
 
 void Game::render_ui() {
-    // Score
-    std::string score_text = "Score: " + std::to_string(score);
-    render_text(score_text, SCREEN_WIDTH + 20, 20, {255, 255, 255, 255});
+    float time = SDL_GetTicks() / 1000.0f;
+    int ui_x = SCREEN_WIDTH + 20;
     
-    // Level
-    std::string level_text = "Level: " + std::to_string(level);
-    render_text(level_text, SCREEN_WIDTH + 20, 50, {255, 255, 255, 255});
+    // Professional HUD header
+    render_text("═══ MISSION DATA ═══", ui_x, 10, {100, 200, 255, 255});
     
-    // Progress to next level
-    int progress = foods_eaten;
-    int needed = foods_needed_for_level;
-    std::string progress_text = "Progress: " + std::to_string(progress) + "/" + std::to_string(needed);
-    render_text(progress_text, SCREEN_WIDTH + 20, 80, {200, 200, 255, 255});
+    // Score with dynamic effects
+    float score_pulse = sin(time * 3) * 0.2f + 0.8f;
+    std::string score_text = "◈ SCORE: " + std::to_string(score);
+    SDL_Color score_color = {
+        static_cast<Uint8>(255 * score_pulse),
+        static_cast<Uint8>(215 * score_pulse),
+        0, 255
+    };
+    render_text(score_text, ui_x, 40, score_color);
     
-    // Snake length
-    std::string length_text = "Length: " + std::to_string(snake.get_length());
-    render_text(length_text, SCREEN_WIDTH + 20, 110, {200, 255, 200, 255});
+    // Level with progress visualization
+    render_level_display(ui_x, 70, time);
     
-    // Combo multiplier
-    if (power_ups.combo_multiplier > 1) {
-        std::string combo_text = "Combo x" + std::to_string(power_ups.combo_multiplier);
-        render_text(combo_text, SCREEN_WIDTH + 20, 140, {255, 255, 0, 255});
-    }
+    // Snake status
+    std::string length_text = "◇ LENGTH: " + std::to_string(snake.get_length());
+    render_text(length_text, ui_x, 140, {100, 255, 100, 255});
     
-    // Game time
-    Uint32 game_time = (SDL_GetTicks() - game_start_time) / 1000;
-    std::string time_text = "Time: " + std::to_string(game_time / 60) + ":" + 
-                           (game_time % 60 < 10 ? "0" : "") + std::to_string(game_time % 60);
-    render_text(time_text, SCREEN_WIDTH + 20, SCREEN_HEIGHT - 30, {200, 255, 200, 255});
+    // Combo system display
+    render_combo_display(ui_x, 170, time);
+    
+    // Mission timer
+    render_mission_timer(ui_x, SCREEN_HEIGHT - 60, time);
 }
 
 void Game::render_power_up_indicators() {
@@ -1145,32 +1112,70 @@ void Game::render_power_up_indicators() {
 }
 
 void Game::render_gradient_background() {
-    // Create a dynamic gradient background with animated stars
-    Uint32 current_time = SDL_GetTicks();
-    float time_factor = sinf(current_time / 5000.0f) * 0.1f;
+    // Advanced dynamic background for gameplay
+    float time = SDL_GetTicks() / 1000.0f;
     
-    // Draw gradient background
+    // Multi-layer animated gradient
     for (int y = 0; y < SCREEN_HEIGHT; y++) {
         float gradient = static_cast<float>(y) / SCREEN_HEIGHT;
-        Uint8 r = static_cast<Uint8>(20 + gradient * 30 + time_factor * 10);
-        Uint8 g = static_cast<Uint8>(20 + gradient * 40 + time_factor * 15);
-        Uint8 b = static_cast<Uint8>(35 + gradient * 60 + time_factor * 20);
+        float wave1 = sin(time * 0.5f + gradient * 6.28f) * 0.1f;
+        float wave2 = cos(time * 0.3f + gradient * 3.14f) * 0.05f;
+        
+        Uint8 r = static_cast<Uint8>(std::max(0, std::min(255, static_cast<int>(15 + gradient * 25 + wave1 * 20))));
+        Uint8 g = static_cast<Uint8>(std::max(0, std::min(255, static_cast<int>(20 + gradient * 35 + wave2 * 15))));
+        Uint8 b = static_cast<Uint8>(std::max(0, std::min(255, static_cast<int>(35 + gradient * 60 + wave1 * 25))));
         
         SDL_SetRenderDrawColor(renderer, r, g, b, 255);
+        SDL_Rect line = {0, y, SCREEN_WIDTH, 1};
+        SDL_RenderFillRect(renderer, &line);
+    }
+    
+    // Digital grid overlay
+    SDL_SetRenderDrawColor(renderer, 30, 50, 80, 60);
+    for (int x = 0; x < SCREEN_WIDTH; x += 40) {
+        SDL_RenderDrawLine(renderer, x, 0, x, SCREEN_HEIGHT);
+    }
+    for (int y = 0; y < SCREEN_HEIGHT; y += 40) {
         SDL_RenderDrawLine(renderer, 0, y, SCREEN_WIDTH, y);
     }
     
-    // Draw animated stars
-    for (int i = 0; i < 50; i++) {
-        int star_x = (i * 37 + current_time / 50) % SCREEN_WIDTH;
-        int star_y = (i * 53) % SCREEN_HEIGHT;
-        float twinkle = sinf((current_time + i * 100) / 1000.0f) * 0.5f + 0.5f;
-        Uint8 alpha = static_cast<Uint8>(100 * twinkle);
+    // Floating data nodes
+    for (int i = 0; i < 15; i++) {
+        float node_time = time + i * 0.5f;
+        int x = static_cast<int>(50 + (SCREEN_WIDTH - 100) * (sin(node_time * 0.1f) + 1) / 2);
+        int y = static_cast<int>(30 + (SCREEN_HEIGHT - 60) * (cos(node_time * 0.08f) + 1) / 2);
         
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, alpha);
-        SDL_RenderDrawPoint(renderer, star_x, star_y);
-        SDL_RenderDrawPoint(renderer, star_x + 1, star_y);
-        SDL_RenderDrawPoint(renderer, star_x, star_y + 1);
+        float glow = (sin(node_time * 2) + 1) / 2;
+        Uint8 alpha = static_cast<Uint8>(40 + glow * 60);
+        
+        SDL_SetRenderDrawColor(renderer, 100, 150, 200, alpha);
+        for (int radius = 0; radius < 3; radius++) {
+            for (int dx = -radius; dx <= radius; dx++) {
+                for (int dy = -radius; dy <= radius; dy++) {
+                    if (dx*dx + dy*dy <= radius*radius) {
+                        SDL_Rect pixel = {x + dx, y + dy, 1, 1};
+                        SDL_RenderFillRect(renderer, &pixel);
+                    }
+                }
+            }
+        }
+    }
+    
+    // Animated starfield with depth
+    for (int layer = 0; layer < 3; layer++) {
+        for (int i = 0; i < 30; i++) {
+            float star_speed = 0.5f + layer * 0.3f;
+            int star_x = (static_cast<int>(i * 37 + time * 20 * star_speed)) % (SCREEN_WIDTH + 50) - 50;
+            int star_y = (i * 53 + layer * 20) % SCREEN_HEIGHT;
+            
+            float twinkle = sin((time * 3 + i * 100 + layer * 50) / 1000.0f) * 0.5f + 0.5f;
+            Uint8 alpha = static_cast<Uint8>((80 + layer * 30) * twinkle);
+            Uint8 size = 1 + layer;
+            
+            SDL_SetRenderDrawColor(renderer, 255 - layer * 50, 255 - layer * 30, 255, alpha);
+            SDL_Rect star = {star_x, star_y, size, size};
+            SDL_RenderFillRect(renderer, &star);
+        }
     }
 }
 
@@ -1711,4 +1716,449 @@ void Game::render_snake_joint(size_t segment_index) {
     SDL_SetRenderDrawColor(renderer, 60, 200, 80, 180);
     SDL_Rect joint = {joint_x - 2, joint_y - 2, 4, 4};
     SDL_RenderFillRect(renderer, &joint);
+}
+
+// Advanced Food Rendering System
+void Game::render_power_core_food(SDL_Rect base_rect, FoodType type, float time) {
+    // Dynamic pulsing and rotation effects
+    float pulse = sin(time * 4) * 0.3f + 0.7f;
+    float rotation_offset = time * 2;
+    
+    SDL_Color core_color = food.get_color();
+    
+    // Multi-layer energy core rendering
+    for (int layer = 4; layer >= 0; layer--) {
+        float layer_scale = 1.0f + (layer * 0.1f * pulse);
+        int layer_size = static_cast<int>(GRID_SIZE * layer_scale);
+        
+        SDL_Rect layer_rect = {
+            base_rect.x + (GRID_SIZE - layer_size) / 2,
+            base_rect.y + (GRID_SIZE - layer_size) / 2,
+            layer_size,
+            layer_size
+        };
+        
+        Uint8 layer_alpha = static_cast<Uint8>(255 / (layer + 1) * pulse);
+        SDL_SetRenderDrawColor(renderer, core_color.r, core_color.g, core_color.b, layer_alpha);
+        SDL_RenderFillRect(renderer, &layer_rect);
+    }
+    
+    // Type-specific effects
+    render_food_type_effects(base_rect, type, time, rotation_offset);
+    
+    // Energy particles around food
+    render_food_energy_particles(base_rect, type, time);
+}
+
+void Game::render_food_type_effects(SDL_Rect rect, FoodType type, float time, float rotation) {
+    int center_x = rect.x + rect.w / 2;
+    int center_y = rect.y + rect.h / 2;
+    
+    switch (type) {
+        case FOOD_SPEED:
+            // Lightning effect
+            for (int i = 0; i < 6; i++) {
+                float angle = rotation + i * 1.047f; // 60 degrees
+                int end_x = center_x + static_cast<int>(cos(angle) * 15);
+                int end_y = center_y + static_cast<int>(sin(angle) * 15);
+                
+                SDL_SetRenderDrawColor(renderer, 255, 255, 100, 200);
+                // Simple line approximation
+                for (int j = 0; j < 10; j++) {
+                    int x = center_x + (end_x - center_x) * j / 10;
+                    int y = center_y + (end_y - center_y) * j / 10;
+                    SDL_Rect bolt = {x, y, 2, 2};
+                    SDL_RenderFillRect(renderer, &bolt);
+                }
+            }
+            break;
+            
+        case FOOD_DOUBLE:
+            // Orbital rings
+            for (int ring = 0; ring < 3; ring++) {
+                float ring_radius = 8 + ring * 4;
+                for (int i = 0; i < 12; i++) {
+                    float angle = rotation + i * 0.524f + ring * 2.1f; // 30 degrees + offset
+                    int x = center_x + static_cast<int>(cos(angle) * ring_radius);
+                    int y = center_y + static_cast<int>(sin(angle) * ring_radius);
+                    
+                    SDL_SetRenderDrawColor(renderer, 100, 255, 255, 150);
+                    SDL_Rect dot = {x - 1, y - 1, 2, 2};
+                    SDL_RenderFillRect(renderer, &dot);
+                }
+            }
+            break;
+            
+        case FOOD_GOLDEN:
+            // Star pattern
+            for (int i = 0; i < 8; i++) {
+                float angle = rotation + i * 0.785f; // 45 degrees
+                int outer_x = center_x + static_cast<int>(cos(angle) * 12);
+                int outer_y = center_y + static_cast<int>(sin(angle) * 12);
+                
+                SDL_SetRenderDrawColor(renderer, 255, 215, 0, 200);
+                SDL_Rect star_point = {outer_x - 1, outer_y - 1, 3, 3};
+                SDL_RenderFillRect(renderer, &star_point);
+            }
+            break;
+            
+        case FOOD_SHRINK:
+            // Shrinking spiral effect
+            for (int i = 0; i < 20; i++) {
+                float angle = rotation * 2 + i * 0.314f;
+                float spiral_radius = 12 - i * 0.5f;
+                int x = center_x + static_cast<int>(cos(angle) * spiral_radius);
+                int y = center_y + static_cast<int>(sin(angle) * spiral_radius);
+                
+                SDL_SetRenderDrawColor(renderer, 255, 100, 255, 150);
+                SDL_Rect spiral_dot = {x, y, 1, 1};
+                SDL_RenderFillRect(renderer, &spiral_dot);
+            }
+            break;
+            
+        case FOOD_PHASE:
+        {
+            // Phase shift effect (wrap in braces to avoid variable scope issues)
+            float phase_offset = sin(time * 6) * 5;
+            SDL_SetRenderDrawColor(renderer, 150, 100, 255, 100);
+            SDL_Rect ghost_rect = {
+                rect.x + static_cast<int>(phase_offset), 
+                rect.y, 
+                rect.w, 
+                rect.h
+            };
+            SDL_RenderFillRect(renderer, &ghost_rect);
+            break;
+        }
+            
+        case FOOD_MEGA:
+            // Explosive energy waves
+            for (int wave = 0; wave < 3; wave++) {
+                float wave_radius = 10 + wave * 8 + sin(time * 5 + wave) * 5;
+                for (int i = 0; i < 16; i++) {
+                    float angle = i * 0.393f; // 22.5 degrees
+                    int x = center_x + static_cast<int>(cos(angle) * wave_radius);
+                    int y = center_y + static_cast<int>(sin(angle) * wave_radius);
+                    
+                    Uint8 alpha = static_cast<Uint8>(200 / (wave + 1));
+                    SDL_SetRenderDrawColor(renderer, 255, 100, 100, alpha);
+                    SDL_Rect energy = {x - 1, y - 1, 2, 2};
+                    SDL_RenderFillRect(renderer, &energy);
+                }
+            }
+            break;
+            
+        case FOOD_NORMAL:
+        default:
+            // Basic food - simple pulse ring
+            float ring_radius = 8 + sin(time * 3) * 3;
+            for (int i = 0; i < 8; i++) {
+                float angle = i * 0.785f; // 45 degrees
+                int x = center_x + static_cast<int>(cos(angle) * ring_radius);
+                int y = center_y + static_cast<int>(sin(angle) * ring_radius);
+                
+                SDL_SetRenderDrawColor(renderer, 100, 255, 100, 120);
+                SDL_Rect dot = {x, y, 1, 1};
+                SDL_RenderFillRect(renderer, &dot);
+            }
+            break;
+    }
+}
+
+void Game::render_food_energy_particles(SDL_Rect rect, FoodType type, float time) {
+    int center_x = rect.x + rect.w / 2;
+    int center_y = rect.y + rect.h / 2;
+    SDL_Color core_color = food.get_color();
+    
+    // Floating energy particles
+    for (int i = 0; i < 8; i++) {
+        float particle_time = time * 2 + i * 0.785f;
+        float orbit_radius = 20 + sin(particle_time) * 5;
+        
+        int x = center_x + static_cast<int>(cos(particle_time) * orbit_radius);
+        int y = center_y + static_cast<int>(sin(particle_time) * orbit_radius);
+        
+        float alpha_mod = (sin(particle_time * 3) + 1) / 2;
+        Uint8 alpha = static_cast<Uint8>(150 * alpha_mod);
+        
+        SDL_SetRenderDrawColor(renderer, core_color.r, core_color.g, core_color.b, alpha);
+        SDL_Rect particle = {x - 1, y - 1, 2, 2};
+        SDL_RenderFillRect(renderer, &particle);
+    }
+}
+
+// Advanced UI Rendering System
+void Game::render_level_display(int x, int y, float time) {
+    // Animated level indicator
+    float level_glow = sin(time * 2) * 0.3f + 0.7f;
+    std::string level_text = "◆ LEVEL: " + std::to_string(level);
+    SDL_Color level_color = {
+        static_cast<Uint8>(100 + 155 * level_glow),
+        static_cast<Uint8>(255 * level_glow),
+        static_cast<Uint8>(100 + 155 * level_glow),
+        255
+    };
+    render_text(level_text, x, y, level_color);
+    
+    // Progress bar
+    int bar_width = 150;
+    int bar_height = 8;
+    int bar_y = y + 20;
+    
+    // Background
+    SDL_SetRenderDrawColor(renderer, 40, 40, 60, 200);
+    SDL_Rect bg_bar = {x, bar_y, bar_width, bar_height};
+    SDL_RenderFillRect(renderer, &bg_bar);
+    
+    // Progress fill
+    float progress = static_cast<float>(foods_eaten) / foods_needed_for_level;
+    int fill_width = static_cast<int>(bar_width * progress);
+    
+    for (int i = 0; i < fill_width; i++) {
+        float gradient = static_cast<float>(i) / bar_width;
+        Uint8 r = static_cast<Uint8>(100 + 155 * gradient);
+        Uint8 g = static_cast<Uint8>(255 - 100 * gradient);
+        Uint8 b = static_cast<Uint8>(100 + 155 * (1 - gradient));
+        
+        SDL_SetRenderDrawColor(renderer, r, g, b, 255);
+        SDL_Rect fill = {x + i, bar_y, 1, bar_height};
+        SDL_RenderFillRect(renderer, &fill);
+    }
+    
+    // Progress text
+    std::string progress_text = std::to_string(foods_eaten) + "/" + std::to_string(foods_needed_for_level);
+    render_text(progress_text, x + bar_width + 10, y + 15, {180, 180, 220, 255});
+}
+
+void Game::render_combo_display(int x, int y, float time) {
+    if (power_ups.combo_multiplier <= 1) return;
+    
+    // Spectacular combo display
+    float combo_pulse = sin(time * 8) * 0.4f + 0.6f;
+    std::string combo_text = "⚡ COMBO x" + std::to_string(power_ups.combo_multiplier) + " ⚡";
+    SDL_Color combo_color = {
+        static_cast<Uint8>(255 * combo_pulse),
+        static_cast<Uint8>(255 * combo_pulse),
+        static_cast<Uint8>(100 + 155 * combo_pulse),
+        255
+    };
+    render_text(combo_text, x, y, combo_color);
+    
+    // Combo streak visualization
+    for (int i = 0; i < power_ups.combo_count && i < 10; i++) {
+        SDL_SetRenderDrawColor(renderer, 255, 255, 100, 200);
+        SDL_Rect streak = {x + i * 8, y + 20, 6, 6};
+        SDL_RenderFillRect(renderer, &streak);
+    }
+}
+
+void Game::render_mission_timer(int x, int y, float time) {
+    Uint32 game_time = (SDL_GetTicks() - game_start_time) / 1000;
+    int minutes = game_time / 60;
+    int seconds = game_time % 60;
+    
+    std::string time_text = std::string("⏱ TIME: ") + 
+                           (minutes < 10 ? "0" : "") + std::to_string(minutes) + ":" + 
+                           (seconds < 10 ? "0" : "") + std::to_string(seconds);
+    
+    float time_pulse = sin(time * 1.5f) * 0.2f + 0.8f;
+    SDL_Color time_color = {
+        static_cast<Uint8>(200 * time_pulse),
+        static_cast<Uint8>(255 * time_pulse),
+        static_cast<Uint8>(200 * time_pulse),
+        255
+    };
+    render_text(time_text, x, y, time_color);
+}
+
+// Epic Game Over Screen System
+void Game::render_game_over_background(float time) {
+    // Dark dramatic background with energy waves
+    for (int y = 0; y < SCREEN_HEIGHT; y++) {
+        float gradient = static_cast<float>(y) / SCREEN_HEIGHT;
+        float wave = sin(time * 0.5f + gradient * 3.14f) * 0.1f;
+        
+        Uint8 r = static_cast<Uint8>(10 + (30 * gradient) + (20 * wave));
+        Uint8 g = static_cast<Uint8>(5 + (15 * gradient));
+        Uint8 b = static_cast<Uint8>(20 + (40 * gradient) + (30 * wave));
+        
+        SDL_SetRenderDrawColor(renderer, r, g, b, 255);
+        SDL_Rect line = {0, y, SCREEN_WIDTH + 200, 1};
+        SDL_RenderFillRect(renderer, &line);
+    }
+    
+    // Dramatic overlay
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 150);
+    SDL_Rect overlay = {0, 0, SCREEN_WIDTH + 200, SCREEN_HEIGHT};
+    SDL_RenderFillRect(renderer, &overlay);
+    
+    // Floating debris particles
+    for (int i = 0; i < 20; i++) {
+        float particle_time = time + i * 0.314f;
+        int x = static_cast<int>(50 + (SCREEN_WIDTH + 100) * (sin(particle_time * 0.1f) + 1) / 2);
+        int y = static_cast<int>(30 + (SCREEN_HEIGHT - 60) * (cos(particle_time * 0.07f) + 1) / 2);
+        
+        float alpha = (sin(particle_time) + 1) / 2 * 100;
+        SDL_SetRenderDrawColor(renderer, 150, 50, 50, static_cast<Uint8>(alpha));
+        SDL_Rect debris = {x, y, 3, 3};
+        SDL_RenderFillRect(renderer, &debris);
+    }
+}
+
+void Game::render_epic_game_over_title(float time) {
+    // Dramatic "MISSION COMPLETE" or "MISSION FAILED"
+    std::string title = score > 100 ? "MISSION COMPLETE" : "MISSION TERMINATED";
+    SDL_Color title_color = score > 100 ? 
+        SDL_Color{100, 255, 100, 255} : 
+        SDL_Color{255, 100, 100, 255};
+    
+    // Pulsing and scaling effect
+    float title_scale = 1.0f + sin(time * 4) * 0.1f;
+    float glow_intensity = 0.7f + sin(time * 6) * 0.3f;
+    
+    title_color.r = static_cast<Uint8>(title_color.r * glow_intensity);
+    title_color.g = static_cast<Uint8>(title_color.g * glow_intensity);
+    title_color.b = static_cast<Uint8>(title_color.b * glow_intensity);
+    
+    // Multiple render passes for glow effect
+    for (int pass = 2; pass >= 0; pass--) {
+        SDL_Color pass_color = title_color;
+        pass_color.a = static_cast<Uint8>(255 / (pass + 1));
+        
+        render_text(title, 
+                   SCREEN_WIDTH/2 - 120 - pass, 
+                   SCREEN_HEIGHT/2 - 150 - pass, 
+                   pass_color, 
+                   large_font);
+    }
+}
+
+void Game::render_game_over_statistics(float time) {
+    int panel_x = SCREEN_WIDTH/2 - 150;
+    int panel_y = SCREEN_HEIGHT/2 - 80;
+    
+    // Statistics panel background
+    SDL_SetRenderDrawColor(renderer, 20, 30, 50, 200);
+    SDL_Rect panel = {panel_x - 10, panel_y - 10, 300, 160};
+    SDL_RenderFillRect(renderer, &panel);
+    
+    // Panel border
+    SDL_SetRenderDrawColor(renderer, 100, 150, 200, 255);
+    SDL_RenderDrawRect(renderer, &panel);
+    
+    // Statistics with animated reveals
+    float stat_glow = sin(time * 3) * 0.2f + 0.8f;
+    
+    std::string score_text = "◈ FINAL SCORE: " + std::to_string(score);
+    SDL_Color score_color = {
+        static_cast<Uint8>(255 * stat_glow),
+        static_cast<Uint8>(215 * stat_glow),
+        0, 255
+    };
+    render_text(score_text, panel_x, panel_y, score_color);
+    
+    std::string level_text = "◆ LEVEL REACHED: " + std::to_string(level);
+    render_text(level_text, panel_x, panel_y + 25, {100, 255, 100, 255});
+    
+    std::string length_text = "◇ MAXIMUM LENGTH: " + std::to_string(snake.get_length());
+    render_text(length_text, panel_x, panel_y + 50, {150, 200, 255, 255});
+    
+    Uint32 game_time = (SDL_GetTicks() - game_start_time) / 1000;
+    int minutes = game_time / 60;
+    int seconds = game_time % 60;
+    std::string time_text = std::string("⏱ MISSION TIME: ") + 
+                           (minutes < 10 ? "0" : "") + std::to_string(minutes) + ":" + 
+                           (seconds < 10 ? "0" : "") + std::to_string(seconds);
+    render_text(time_text, panel_x, panel_y + 75, {200, 255, 200, 255});
+    
+    std::string games_text = "◉ TOTAL MISSIONS: " + std::to_string(game_stats->games_played);
+    render_text(games_text, panel_x, panel_y + 100, {200, 200, 255, 255});
+}
+
+void Game::render_achievement_showcase(float time) {
+    int unlocked_count = achievement_system->get_unlocked_count();
+    int total_count = achievement_system->get_total_count();
+    
+    int panel_x = SCREEN_WIDTH/2 - 120;
+    int panel_y = SCREEN_HEIGHT/2 + 100;
+    
+    // Achievement progress bar
+    render_text("◈ ACHIEVEMENT PROGRESS ◈", panel_x, panel_y, {255, 215, 0, 255});
+    
+    int bar_width = 240;
+    int bar_height = 12;
+    int bar_x = panel_x;
+    int bar_y = panel_y + 25;
+    
+    // Background bar
+    SDL_SetRenderDrawColor(renderer, 40, 40, 60, 200);
+    SDL_Rect bg_bar = {bar_x, bar_y, bar_width, bar_height};
+    SDL_RenderFillRect(renderer, &bg_bar);
+    
+    // Progress fill with animation
+    float progress = static_cast<float>(unlocked_count) / total_count;
+    int fill_width = static_cast<int>(bar_width * progress);
+    
+    for (int i = 0; i < fill_width; i++) {
+        float gradient = static_cast<float>(i) / bar_width;
+        float pulse = sin(time * 4 + gradient * 6.28f) * 0.3f + 0.7f;
+        
+        Uint8 r = static_cast<Uint8>(255 * gradient * pulse);
+        Uint8 g = static_cast<Uint8>(215 * pulse);
+        Uint8 b = static_cast<Uint8>(0);
+        
+        SDL_SetRenderDrawColor(renderer, r, g, b, 255);
+        SDL_Rect fill = {bar_x + i, bar_y, 1, bar_height};
+        SDL_RenderFillRect(renderer, &fill);
+    }
+    
+    // Achievement text
+    std::string achievement_text = std::to_string(unlocked_count) + " / " + std::to_string(total_count) + " UNLOCKED";
+    render_text(achievement_text, panel_x + 50, panel_y + 50, {255, 215, 0, 255});
+}
+
+void Game::render_high_score_celebration(float time) {
+    // Spectacular high score celebration
+    float celebration_intensity = sin(time * 8) * 0.5f + 0.5f;
+    
+    // Firework-like particles
+    for (int i = 0; i < 30; i++) {
+        float angle = i * 0.209f; // 12 degrees
+        float radius = 80 + sin(time * 5 + i) * 20;
+        int x = SCREEN_WIDTH/2 + static_cast<int>(cos(angle) * radius);
+        int y = SCREEN_HEIGHT/2 - 200 + static_cast<int>(sin(angle) * radius);
+        
+        SDL_SetRenderDrawColor(renderer, 
+                             255, 
+                             static_cast<Uint8>(255 * celebration_intensity),
+                             static_cast<Uint8>(100 * celebration_intensity),
+                             200);
+        SDL_Rect spark = {x - 2, y - 2, 4, 4};
+        SDL_RenderFillRect(renderer, &spark);
+    }
+    
+    // Celebration text
+    std::string celebration_text = "★ NEW RECORD ACHIEVED ★";
+    SDL_Color celebration_color = {
+        255,
+        static_cast<Uint8>(255 * celebration_intensity),
+        static_cast<Uint8>(100 + 155 * celebration_intensity),
+        255
+    };
+    
+    render_text(celebration_text, SCREEN_WIDTH/2 - 120, SCREEN_HEIGHT/2 - 220, celebration_color);
+}
+
+void Game::render_return_instruction(float time) {
+    float pulse = sin(time * 4) * 0.3f + 0.7f;
+    SDL_Color instruction_color = {
+        static_cast<Uint8>(200 * pulse),
+        static_cast<Uint8>(200 * pulse),
+        static_cast<Uint8>(255 * pulse),
+        255
+    };
+    
+    render_text("▶ PRESS [SPACE] TO RETURN TO COMMAND CENTER ◀", 
+                SCREEN_WIDTH/2 - 180, SCREEN_HEIGHT - 50, instruction_color);
 }

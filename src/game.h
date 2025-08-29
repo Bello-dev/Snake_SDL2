@@ -259,6 +259,24 @@ public:
     void render_speed_indicators(SDL_Rect head_rect, float time);
     void render_snake_joint(size_t segment_index);
     
+    // Advanced food rendering
+    void render_power_core_food(SDL_Rect base_rect, FoodType type, float time);
+    void render_food_type_effects(SDL_Rect rect, FoodType type, float time, float rotation);
+    void render_food_energy_particles(SDL_Rect rect, FoodType type, float time);
+    
+    // Professional UI system
+    void render_level_display(int x, int y, float time);
+    void render_combo_display(int x, int y, float time);
+    void render_mission_timer(int x, int y, float time);
+    
+    // Epic game over screen
+    void render_game_over_background(float time);
+    void render_epic_game_over_title(float time);
+    void render_game_over_statistics(float time);
+    void render_achievement_showcase(float time);
+    void render_high_score_celebration(float time);
+    void render_return_instruction(float time);
+    
     // Particle system
     void add_particle(float x, float y, float vx, float vy, SDL_Color color);
     void spawn_food_particles(float x, float y, FoodType type);
