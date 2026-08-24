@@ -1,32 +1,6 @@
-# Snake SDL3 - Édition Ultime 🐍✨
+# Snake SDL2 - Édition Ultime 🐍✨
 
-Un jeu de serpent **révolutionnaire** développé en C utilisant SDL3, transformé en une expérience gaming moderne avec des effets visuels spectaculaires, un système de pouvoirs magiques et une gameplay immersive qui redéfinit le classique Snake!
-
-## 🌍 **NOUVEAU : Support Multi-Plateforme**
-
-**Snake SDL3** fonctionne maintenant sur **Windows, Linux ET Android** ! 🚀
-
-### Installation Rapide par Plateforme
-
-#### 🐧 Linux
-```bash
-./build_linux.sh && cd build && ./snake
-```
-*Installation automatique des dépendances incluse*
-
-#### 🪟 Windows  
-```cmd
-build_windows.bat && cd build\Release && snake.exe
-```
-*Configuration automatique via vcpkg/Chocolatey*
-
-#### 🤖 Android
-```bash
-./build_android.sh && adb install android/app/build/outputs/apk/debug/app-debug.apk
-```
-*Installation SDK/NDK et téléchargement SDL3 automatiques*
-
-📖 **Guide complet** : [CROSS_PLATFORM.md](CROSS_PLATFORM.md)
+Un jeu de serpent **révolutionnaire** développé en C utilisant SDL2, transformé en une expérience gaming moderne avec des effets visuels spectaculaires, un système de pouvoirs magiques et une gameplay immersive qui redéfinit le classique Snake!
 
 ## 🌟 Fonctionnalités Révolutionnaires
 
@@ -79,7 +53,7 @@ sudo apt update
 sudo apt install gcc libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer-dev
 
 # Fedora
-sudo dnf install gcc SDL3-devel SDL3_image-devel SDL3_ttf-devel SDL3_mixer-devel
+sudo dnf install gcc SDL2-devel SDL2_image-devel SDL2_ttf-devel SDL2_mixer-devel
 
 # Arch Linux  
 sudo pacman -S gcc sdl2 sdl2_image sdl2_ttf sdl2_mixer
@@ -88,8 +62,8 @@ sudo pacman -S gcc sdl2 sdl2_image sdl2_ttf sdl2_mixer
 ### Compilation et Lancement
 ```bash
 # Cloner le repo
-git clone https://github.com/Bello-dev/Snake_SDL3.git
-cd Snake_SDL3
+git clone https://github.com/Bello-dev/Snake_SDL2.git
+cd Snake_SDL2
 
 # Compiler
 make
@@ -135,7 +109,7 @@ make
 
 ### Structure du Projet
 ```
-Snake_SDL3/
+Snake_SDL2/
 ├── src/              # Code source modulaire
 │   ├── main.c        # Point d'entrée 
 │   ├── game.c        # Logic principale + systèmes
@@ -150,9 +124,9 @@ Snake_SDL3/
 
 ### Technologies Utilisées
 - **Langage** : C (C99 standard)
-- **Graphics** : SDL3 avec rendu hardware-acceleré
-- **Audio** : SDL3_mixer pour les effets sonores
-- **Fonts** : SDL3_ttf pour le texte stylisé
+- **Graphics** : SDL2 avec rendu hardware-acceleré
+- **Audio** : SDL2_mixer pour les effets sonores
+- **Fonts** : SDL2_ttf pour le texte stylisé
 - **Build** : Makefile multi-plateforme
 
 ## 🎯 Stratégies Pro pour Dominer
@@ -211,13 +185,13 @@ Ce projet est sous **licence libre**. Voir le fichier `LICENSE` pour plus de dé
 
 ## 🙏 Remerciements Spéciaux
 
-- **Communauté SDL3** pour l'excellente documentation
+- **Communauté SDL2** pour l'excellente documentation
 - **Testeurs et contributeurs** qui rendent ce projet toujours meilleur  
 - **Joueurs rétro** qui gardent vivant l'esprit des classiques
 - **Vous** qui découvrez cette version révolutionnaire de Snake !
 
 ---
 
-*🎮 Développé avec ❤️, beaucoup de ☕ et une passion débordante pour le gaming en C et SDL3*
+*🎮 Développé avec ❤️, beaucoup de ☕ et une passion débordante pour le gaming en C et SDL2*
 
-**Rejoignez l'aventure Snake SDL3 - Où le rétro rencontre le moderne ! 🚀✨**
+**Rejoignez l'aventure Snake SDL2 - Où le rétro rencontre le moderne ! 🚀✨**

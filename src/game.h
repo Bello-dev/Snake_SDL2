@@ -1,15 +1,9 @@
 #ifndef GAME_H
 #define GAME_H
 
-#ifdef USING_SDL2_FALLBACK
-    #include <SDL2/SDL.h>
-    #include <SDL2/SDL_ttf.h>
-    #include <SDL2/SDL_mixer.h>
-#else
-    #include <SDL3/SDL.h>
-    #include <SDL3_ttf/SDL_ttf.h>
-    #include <SDL3_mixer/SDL_mixer.h>
-#endif
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_mixer.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -19,23 +13,6 @@
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
-#endif
-
-// Platform detection
-#ifdef _WIN32
-    #define PLATFORM_WINDOWS
-#elif defined(__ANDROID__)
-    #define PLATFORM_ANDROID
-#elif defined(__linux__)
-    #define PLATFORM_LINUX
-#elif defined(__APPLE__)
-    #define PLATFORM_APPLE
-#endif
-
-// Platform-specific includes
-#ifdef PLATFORM_WINDOWS
-    #include <windows.h>
-    #include <shlobj.h>
 #endif
 
 // Screen dimensions
@@ -240,9 +217,5 @@ void get_food_color(FoodType type, Uint8* r, Uint8* g, Uint8* b);
 // Save/Load system
 void save_high_score(int score);
 int load_high_score(void);
-
-// Cross-platform font loading
-TTF_Font* load_system_font(int size);
-const char* get_system_font_path(void);
 
 #endif
