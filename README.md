@@ -55,7 +55,7 @@ sudo apt install gcc libsdl2-dev libsdl2-image-dev libsdl2-ttf-dev libsdl2-mixer
 # Fedora
 sudo dnf install gcc SDL2-devel SDL2_image-devel SDL2_ttf-devel SDL2_mixer-devel
 
-# Arch Linux  
+# Arch Linux
 sudo pacman -S gcc sdl2 sdl2_image sdl2_ttf sdl2_mixer
 ```
 
@@ -82,7 +82,7 @@ make
 
 ### Sélection de Difficulté
 - **1** : Facile (apprentissage en douceur)
-- **2** : Normal (expérience équilibrée) 
+- **2** : Normal (expérience équilibrée)
 - **3** : Difficile (défi ultime)
 
 ### Bonus Secret
@@ -95,7 +95,7 @@ make
 - Bonus de temps pour maîtriser les combos
 - Idéal pour découvrir tous les types de nourriture
 
-### 🟡 Normal - Mode Équilibré  
+### 🟡 Normal - Mode Équilibré
 - Progression parfaitement calibrée
 - Challenge croissant et récompenses proportionnelles
 - L'expérience Snake ultime recommandée
@@ -111,7 +111,7 @@ make
 ```
 Snake_SDL2/
 ├── src/              # Code source modulaire
-│   ├── main.c        # Point d'entrée 
+│   ├── main.c        # Point d'entrée
 │   ├── game.c        # Logic principale + systèmes
 │   ├── game.h        # Structures et déclarations
 │   ├── snake.c       # Gestion du serpent
@@ -136,9 +136,9 @@ Snake_SDL2/
 2. **Multiplicateurs** : Combo x2, x3, x4, x5 (maximum)
 3. **Nourriture Double** : Active pendant un combo = scores astronomiques
 
-### 🌟 Optimiser les Pouvoirs  
+### 🌟 Optimiser les Pouvoirs
 1. **Vitesse** : Utilisez pour échapper aux situations critiques
-2. **Phase** : Traversez votre propre corps en urgence  
+2. **Phase** : Traversez votre propre corps en urgence
 3. **Rétrécissement** : Réduisez les risques dans les espaces confinés
 
 ### 🏆 Techniques Avancées
@@ -150,7 +150,7 @@ Snake_SDL2/
 
 ### 🎵 Prochaines Améliorations
 - [ ] **Bande sonore épique** avec musiques dynamiques
-- [ ] **Mode multijoueur** local en écran partagé  
+- [ ] **Mode multijoueur** local en écran partagé
 - [ ] **Achievements système** avec déblocages
 - [ ] **Skins de serpents** personnalisables
 - [ ] **Mode speedrun** avec classements
@@ -170,7 +170,7 @@ Les contributions sont **chaleureusement accueillies** ! Ce projet est conçu po
 ### Idées de Contributions
 - Nouveaux types de nourriture avec mécaniques uniques
 - Effets visuels encore plus spectaculaires
-- Optimisations de performance 
+- Optimisations de performance
 - Portage vers d'autres plateformes
 - Traductions multilingues
 - Documentation et tutoriels
@@ -186,7 +186,7 @@ Ce projet est sous **licence libre**. Voir le fichier `LICENSE` pour plus de dé
 ## 🙏 Remerciements Spéciaux
 
 - **Communauté SDL2** pour l'excellente documentation
-- **Testeurs et contributeurs** qui rendent ce projet toujours meilleur  
+- **Testeurs et contributeurs** qui rendent ce projet toujours meilleur
 - **Joueurs rétro** qui gardent vivant l'esprit des classiques
 - **Vous** qui découvrez cette version révolutionnaire de Snake !
 

@@ -1,4 +1,4 @@
-# 🐍 Snake SDL2 - Édition Ultime 
+# 🐍 Snake SDL2 - Édition Ultime
 
 ## Nouvelles Fonctionnalités Implémentées ✨
 
@@ -35,7 +35,7 @@ Le code a été restructuré pour supporter toutes ces nouvelles fonctionnalité
 ```c
 // Types de nourriture avec effets
 typedef enum {
-    FOOD_NORMAL, FOOD_SPEED, FOOD_DOUBLE, 
+    FOOD_NORMAL, FOOD_SPEED, FOOD_DOUBLE,
     FOOD_GOLDEN, FOOD_SHRINK, FOOD_PHASE, FOOD_MEGA
 } FoodType;
 

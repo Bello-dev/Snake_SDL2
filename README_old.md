@@ -122,7 +122,7 @@ gcc -o snake *.c -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer
 ## Niveaux de Difficulté
 
 - **Facile (1)** : Vitesse lente, 5 points par nourriture
-- **Normal (2)** : Vitesse modérée, 10 points par nourriture  
+- **Normal (2)** : Vitesse modérée, 10 points par nourriture
 - **Difficile (3)** : Vitesse rapide, 20 points par nourriture
 
 *Bonus de longueur : +2 points par segment au-delà de la longueur initiale*

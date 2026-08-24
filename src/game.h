@@ -120,7 +120,7 @@ typedef struct {
     TTF_Font* large_font;
     Mix_Chunk* eat_sound;
     Mix_Chunk* game_over_sound;
-    
+
     Snake snake;
     Food food;
     GameState state;
@@ -128,31 +128,31 @@ typedef struct {
     int score;
     int high_score;
     bool running;
-    
+
     // Timing
     Uint32 last_move_time;
     Uint32 move_delay;
     Uint32 base_move_delay;
-    
+
     // Visual effects
     float food_pulse;
     int game_over_alpha;
     Particle particles[MAX_PARTICLES];
     int particle_count;
-    
+
     // Power-up system
     PowerUps power_ups;
-    
+
     // Level system
     int level;
     int foods_needed_for_level;
     int base_score_per_food;
-    
+
     // Enhanced statistics
     int foods_eaten;
     int special_foods_eaten;
     Uint32 game_start_time;
-    
+
     // Screen effects
     float screen_shake_intensity;
     Uint32 screen_shake_end_time;

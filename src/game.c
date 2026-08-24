@@ -2,25 +2,25 @@
 
 bool game_init(Game* game) {
     // Create window
-    game->window = SDL_CreateWindow("Snake SDL2 - Enhanced Edition", 
+    game->window = SDL_CreateWindow("Snake SDL2 - Enhanced Edition",
                                    SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
                                    SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
     if (!game->window) {
         printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());
         return false;
     }
-    
+
     // Create renderer
     game->renderer = SDL_CreateRenderer(game->window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     if (!game->renderer) {
         printf("Renderer could not be created! SDL_Error: %s\n", SDL_GetError());
         return false;
     }
-    
+
     // Load font (we'll use a basic font for now)
     game->font = TTF_OpenFont("/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf", 24);
     game->large_font = TTF_OpenFont("/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf", 48);
-    
+
     // If system fonts don't exist, create without fonts (text will be skipped)
     if (!game->font) {
         printf("Warning: Could not load font. Text will not be displayed.\n");
@@ -28,11 +28,11 @@ bool game_init(Game* game) {
     if (!game->large_font) {
         printf("Warning: Could not load large font. Large text will not be displayed.\n");
     }
-    
+
     // Initialize audio (optional - game works without sound)
     game->eat_sound = NULL;
     game->game_over_sound = NULL;
-    
+
     // Initialize game state
     game->state = GAME_MENU;
     game->difficulty = DIFFICULTY_NORMAL;
@@ -53,18 +53,18 @@ bool game_init(Game* game) {
     game->base_score_per_food = 10;
     game->screen_shake_intensity = 0.0f;
     game->screen_shake_end_time = 0;
-    
+
     // Initialize power-up system
     powerups_init(&game->power_ups);
-    
+
     // Initialize game objects
     snake_init(&game->snake);
     food_spawn(&game->food, &game->snake);
     game->food.type = food_get_random_type(game->level, game->foods_eaten);
-    
+
     // Set random seed
     srand(time(NULL));
-    
+
     return true;
 }
 
@@ -91,7 +91,7 @@ void game_cleanup(Game* game) {
 
 void game_handle_events(Game* game) {
     SDL_Event e;
-    
+
     while (SDL_PollEvent(&e)) {
         if (e.type == SDL_QUIT) {
             game->running = false;
@@ -101,7 +101,7 @@ void game_handle_events(Game* game) {
                 case SDLK_ESCAPE:
                     game->running = false;
                     break;
-                    
+
                 case SDLK_SPACE:
                     if (game->state == GAME_MENU) {
                         game->state = GAME_PLAYING;
@@ -117,60 +117,60 @@ void game_handle_events(Game* game) {
                         game->state = GAME_MENU;
                     }
                     break;
-                    
+
                 case SDLK_1:
                     if (game->state == GAME_MENU) {
                         game->difficulty = DIFFICULTY_EASY;
                     }
                     break;
-                    
+
                 case SDLK_2:
                     if (game->state == GAME_MENU) {
                         game->difficulty = DIFFICULTY_NORMAL;
                     }
                     break;
-                    
+
                 case SDLK_3:
                     if (game->state == GAME_MENU) {
                         game->difficulty = DIFFICULTY_HARD;
                     }
                     break;
-                    
+
                 case SDLK_UP:
                 case SDLK_w:
                     if (game->state == GAME_PLAYING) {
                         snake_change_direction(&game->snake, DIR_UP);
                     }
                     break;
-                    
+
                 case SDLK_DOWN:
                 case SDLK_s:
                     if (game->state == GAME_PLAYING) {
                         snake_change_direction(&game->snake, DIR_DOWN);
                     }
                     break;
-                    
+
                 case SDLK_LEFT:
                 case SDLK_a:
                     if (game->state == GAME_PLAYING) {
                         snake_change_direction(&game->snake, DIR_LEFT);
                     }
                     break;
-                    
+
                 case SDLK_RIGHT:
                 case SDLK_d:
                     if (game->state == GAME_PLAYING) {
                         snake_change_direction(&game->snake, DIR_RIGHT);
                     }
                     break;
-                    
+
                 case SDLK_r:
                     if (game->state == GAME_OVER) {
                         game->state = GAME_PLAYING;
                         game_reset(game);
                     }
                     break;
-                    
+
                 // Debug/cheat keys (for testing)
                 case SDLK_p:
                     if (game->state == GAME_PLAYING) {
@@ -191,31 +191,31 @@ void game_handle_events(Game* game) {
 
 void game_update(Game* game) {
     Uint32 current_time = SDL_GetTicks();
-    
+
     if (game->state != GAME_PLAYING) {
         // Update visual effects even when not playing
         game->food_pulse += 0.1f;
         if (game->food_pulse > 2 * M_PI) {
             game->food_pulse = 0;
         }
-        
+
         if (game->state == GAME_OVER && game->game_over_alpha < 255) {
             game->game_over_alpha += 5;
             if (game->game_over_alpha > 255) game->game_over_alpha = 255;
         }
-        
+
         return;
     }
-    
+
     // Update power-ups
     powerups_update(&game->power_ups, current_time);
-    
+
     // Update visual effects
     game->food_pulse += 0.15f;
     if (game->food_pulse > 2 * M_PI) {
         game->food_pulse = 0;
     }
-    
+
     // Update food effects
     if (game->food.active) {
         game->food.pulse_phase += 0.2f;
@@ -224,10 +224,10 @@ void game_update(Game* game) {
         }
         game->food.glow_intensity = 0.8f + 0.2f * sinf(game->food.pulse_phase);
     }
-    
+
     // Update particles
     update_particles(game);
-    
+
     // Update screen shake
     if (current_time < game->screen_shake_end_time) {
         float shake_progress = (float)(game->screen_shake_end_time - current_time) / 500.0f;
@@ -235,15 +235,15 @@ void game_update(Game* game) {
     } else {
         game->screen_shake_intensity = 0.0f;
     }
-    
+
     // Determine current move delay based on power-ups and level
     Uint32 move_delay = level_get_speed(game->level, powerups_is_speed_active(&game->power_ups));
-    
+
     // Move snake based on timing
     if (current_time - game->last_move_time >= move_delay) {
         snake_move(&game->snake);
         game->last_move_time = current_time;
-        
+
         // Check collision with walls or self (with phase power-up consideration)
         bool collision = false;
         if (powerups_is_phase_active(&game->power_ups)) {
@@ -263,7 +263,7 @@ void game_update(Game* game) {
         } else {
             collision = snake_check_collision(&game->snake);
         }
-        
+
         if (collision) {
             game->state = GAME_OVER;
             game->game_over_alpha = 0;
@@ -276,27 +276,27 @@ void game_update(Game* game) {
             }
             return;
         }
-        
+
         // Check collision with food
         if (food_check_collision(&game->food, &game->snake)) {
             // Spawn particles at food location with type-specific effects
-            spawn_food_particles(game, game->food.x * GRID_SIZE + GRID_SIZE/2, 
+            spawn_food_particles(game, game->food.x * GRID_SIZE + GRID_SIZE/2,
                                        game->food.y * GRID_SIZE + GRID_SIZE/2, game->food.type);
             spawn_power_up_particles(game, game->food.x * GRID_SIZE + GRID_SIZE/2,
                                            game->food.y * GRID_SIZE + GRID_SIZE/2, game->food.type);
-            
+
             // Apply food effect (includes growing snake and updating score)
             food_apply_effect(game, game->food.type);
-            
+
             // Spawn new food
             food_spawn(&game->food, &game->snake);
             game->food.type = food_get_random_type(game->level, game->foods_eaten);
-            
+
             // Check for level up
             if (game->foods_eaten >= level_get_required_foods(game->level)) {
                 level_up(game);
             }
-            
+
             if (game->eat_sound) {
                 Mix_PlayChannel(-1, game->eat_sound, 0);
             }
@@ -311,10 +311,10 @@ void game_render(Game* game) {
         shake_x = (rand() % (int)(game->screen_shake_intensity * 2)) - (int)game->screen_shake_intensity;
         shake_y = (rand() % (int)(game->screen_shake_intensity * 2)) - (int)game->screen_shake_intensity;
     }
-    
+
     // Clear screen with gradient background
     render_gradient_background(game->renderer);
-    
+
     // Apply shake offset
     if (shake_x != 0 || shake_y != 0) {
         SDL_Rect viewport;
@@ -323,7 +323,7 @@ void game_render(Game* game) {
         viewport.y += shake_y;
         SDL_RenderSetViewport(game->renderer, &viewport);
     }
-    
+
     if (game->state == GAME_MENU) {
         render_menu(game);
     }
@@ -334,7 +334,7 @@ void game_render(Game* game) {
         render_particles(game);
         render_power_up_indicators(game);
         render_ui(game);
-        
+
         if (game->state == GAME_PAUSED) {
             // Render pause overlay
             SDL_SetRenderDrawBlendMode(game->renderer, SDL_BLENDMODE_BLEND);
@@ -351,13 +351,13 @@ void game_render(Game* game) {
         render_ui(game);
         render_game_over(game);
     }
-    
+
     // Reset viewport if shake was applied
     if (shake_x != 0 || shake_y != 0) {
         SDL_Rect viewport = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
         SDL_RenderSetViewport(game->renderer, &viewport);
     }
-    
+
     SDL_RenderPresent(game->renderer);
 }
 
@@ -365,7 +365,7 @@ void game_reset(Game* game) {
     snake_init(&game->snake);
     food_spawn(&game->food, &game->snake);
     game->food.type = food_get_random_type(1, 0); // Start with level 1
-    
+
     game->score = 0;
     game->foods_eaten = 0;
     game->special_foods_eaten = 0;
@@ -373,23 +373,23 @@ void game_reset(Game* game) {
     game->foods_needed_for_level = 5;
     game->base_score_per_food = 10;
     game->game_start_time = SDL_GetTicks();
-    
+
     // Reset power-ups
     powerups_init(&game->power_ups);
-    
+
     // Set initial speed based on difficulty
     switch (game->difficulty) {
-        case DIFFICULTY_EASY: 
+        case DIFFICULTY_EASY:
             game->base_move_delay = 250;
             break;
-        case DIFFICULTY_NORMAL: 
+        case DIFFICULTY_NORMAL:
             game->base_move_delay = 200;
             break;
-        case DIFFICULTY_HARD: 
+        case DIFFICULTY_HARD:
             game->base_move_delay = 150;
             break;
     }
-    
+
     game->move_delay = game->base_move_delay;
     game->last_move_time = 0;
     game->food_pulse = 0;
@@ -417,17 +417,17 @@ void powerups_update(PowerUps* power_ups, Uint32 current_time) {
     if (power_ups->speed_boost && current_time >= power_ups->speed_end_time) {
         power_ups->speed_boost = false;
     }
-    
+
     // Update double score
     if (power_ups->double_score && current_time >= power_ups->double_score_end_time) {
         power_ups->double_score = false;
     }
-    
+
     // Update phase power
     if (power_ups->phase_through_walls && current_time >= power_ups->phase_end_time) {
         power_ups->phase_through_walls = false;
     }
-    
+
     // Update combo system
     if (current_time - power_ups->last_food_time > 3000) { // 3 seconds timeout
         power_ups->combo_count = 0;
@@ -459,13 +459,13 @@ int powerups_get_score_multiplier(PowerUps* power_ups) {
 void level_up(Game* game) {
     game->level++;
     game->foods_needed_for_level = level_get_required_foods(game->level);
-    
+
     // Increase base score per food
     game->base_score_per_food = 10 + (game->level - 1) * 2;
-    
+
     // Add bonus score for level up
     game->score += game->level * 50;
-    
+
     // Add screen shake for level up
     add_screen_shake(game, 10.0f, 800);
 }
@@ -477,11 +477,11 @@ int level_get_required_foods(int level) {
 Uint32 level_get_speed(int level, bool speed_boost) {
     Uint32 base_delay = 200 - (level - 1) * 5; // Get faster each level
     if (base_delay < 80) base_delay = 80; // Minimum speed
-    
+
     if (speed_boost) {
         return base_delay / 2; // Double speed when boosted
     }
-    
+
     return base_delay;
 }
 
